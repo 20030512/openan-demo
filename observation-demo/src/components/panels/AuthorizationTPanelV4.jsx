@@ -14,7 +14,8 @@ import { CASE_EVENTS } from '../../storyline/case-data.js'
     响应流结束（424..448，见 panel-timing authorizationWindowOf）；两条消息分别呈现：
     ①请求气泡（动网操作要素+有效期，传输→粤西）随面板出现；②响应气泡（授权操作
     执行结果：成功，粤西→传输）在响应段开始（窗口中点 436）渐显；
-   V6.56（用户规格）：请求要素调整——删除「有效期」行，新增「授权人 TRNOC005632」
+    V6.56（用户规格）：请求要素调整——删除「有效期」行，新增「授权人」（原真实账号，
+    V6.72 脱敏、V6.78 改随机虚拟姓名）
     与「任务编号」（值取自 粤西↔传输 Authorization-T 消息的 taskId——响应报文
     artifactUpdate.taskId，见 case-data.js c2 t=121；请求报文无 taskId 字段）。
     净增一行，行距 0.5rem→0.25rem（panels.css .at4-row）以容纳于固定 15.5rem 面板高 */
@@ -27,11 +28,12 @@ const AUTHZ_TASK_ID = (() => {
   return m ? m[1] : '';
 })();
 
+// V6.72→V6.78（用户规格）：授权人虚拟化——随机虚拟姓名（部门「传输室」保留）
 const ROWS = [
   { label: '动网操作的业务场景', value: '业务投诉诊断' },
   { label: '动网操作的处置类型', value: '业务抢通' },
   { label: '动网操作名称', value: '隧道调优' },
-  { label: '授权人', value: 'TRNOC005632' },
+  { label: '授权人', value: '陈志远（传输室）' },
   { label: '任务编号', value: AUTHZ_TASK_ID },
 ]
 

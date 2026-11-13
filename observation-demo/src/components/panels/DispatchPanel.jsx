@@ -11,9 +11,9 @@ import { DISPATCH_WEIGHTS } from '../../storyline/panel-timing.js'
    消息气泡高度随文字折行自适应（16 + 行数×16 + 16），梯形光束高度随气泡联动；
    回复气泡 16/16 内边距（高 48）。 */
 
-// 消息文案（V4：原文档 APP 定位结果——YWHJ 业务汇聚机房端口收光无光，光纤中断；
-// V6.24：工单2 调度处置无弹窗（dispatchPanel:false）——本面板仅工单1 挂载）
-const MSG_TEXT = '投诉工单的定位结果：YWHJ - 业务汇聚机房 1 (990) 的 12-TPJ1EM8F-4 端口收光无光，发光正常，原因是光纤中断。请前往故障点修复。'
+// 消息文案（V4：原文档 APP 定位结果；V6.77 端口虚拟化——P10005-A02，
+// 原真实机房/板卡端口不再留存；V6.24：工单2 调度处置无弹窗（dispatchPanel:false）——本面板仅工单1 挂载）
+const MSG_TEXT = '投诉工单的定位结果：P10005-A02 的 12-2 端口收光无光，发光正常，原因是光纤中断。请前往故障点修复。'
 
 export default function DispatchPanel(props) {
   const stage = useStageClock(props, 3, DISPATCH_WEIGHTS)

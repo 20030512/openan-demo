@@ -141,11 +141,13 @@ function NodeCard({ k, world, pub }) {
   });
   // 子步骤详细描述（live：世界态 desc——执行中子步骤的说明文字；快照：粤西内嵌描述真实文案）
   // V6.48：命中 KEY_DESCS（定界结论/根因总结/修复验证结果）切 .fl-desc--key 强调样式
+  // V6.68：data-text 供 .fl-desc--key::after 复刻同文案覆层（承载流光渐带，见 flow.css）
   const descNode = desc.phase === 'show' || desc.phase === 'out' ? (
     <div
       className={'fl-desc' + (KEY_DESCS.has(desc.text) ? ' fl-desc--key' : '') + (desc.phase === 'out' ? ' fl-desc-out' : '')}
       style={{ transitionDuration: desc.fadeMs + 'ms' }}
       title={desc.text}
+      data-text={KEY_DESCS.has(desc.text) ? desc.text : undefined}
     >
       {desc.text}
     </div>

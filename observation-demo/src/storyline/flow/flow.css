@@ -182,32 +182,64 @@
 
 /* V6.48（用户规格）：关键子步骤结果描述（WAIMO 定界结论 / 传输 根因总结 / 两案修复验证
     结果 / 粤西 抢通执行——cases.js KEY_DESCS）：与子步骤标签（.fl-mini__title）同款字
-    Microsoft YaHei 加粗 0.875rem。V6.50..52（用户规格）：左→右白色流光（白光带→实心
-    亮核→冰蓝亮底）——对比仍不足，方案废止。V6.54（用户规格）：改为闪烁——底字 #C9E7FF
-    恒亮    （整体保持亮色），1.2s ease-in-out 无限脉冲至纯白 #FFFFFF + 双层白色辉光
-    （0.25rem@0.95 + 0.75rem@0.55——深色卡面上辉光即闪烁主体）；辉光用 filter:
-    drop-shadow（作用于 overflow 裁剪后的渲染结果，可外溢元素盒铺到卡面——text-shadow
-    会被行数截断的 overflow:hidden 裁在盒内）；color/filter 插值动画（不再依赖
-    background-clip 渐变底图）。
-    行高 1.0625rem：14px 加粗下最长关键描述（c1 根因总结 3 行 = 51px）垂直居中溢入
-    卡底 padding（同 V6.36 口径），不越卡边框 */
+    Microsoft YaHei 加粗 0.875rem。效果迭代：V6.50..52 蓝底白光流光 → V6.54/62 冰蓝底
+    白色闪烁（终版降亮 #F2F9FF）→ V6.61 回流光。V6.63（用户规格·定稿）：整体白色文字 +
+    偏蓝流光——底字 #FFFFFF 纯白（与子步骤标签一致），#5CACFF 强调蓝实心光核 + #A9DBFF
+    浅蓝肩，底图 300%、1.8s linear 随 background-position 100%→0% 自左向右扫过
+    （底图恒覆盖文字，光带间隙呈纯白，无透明帧）。    V6.64/65（用户规格）：流光收窄→再减半。
+    V6.66（用户规格）：改为呼吸闪烁——底字缓慢起伏 + 峰值轻晕（不过曝、字形始终清晰）。
+    V6.67（用户规格）：呼吸更明显——谷值 #EAF4FF→#C9E7FF 冰蓝、柔光 0.5rem@0.65。
+    V6.68（用户规格）：呼吸+流光叠加，呼吸再明显——①底字呼吸谷值 #C9E7FF→#A9DBFF
+    （更深冰蓝）；②流光经 ::after 复刻覆层承载（attr(data-text) 绝对定位同文案——
+    同宽同行高同断行，data-text 由 NodeCard 挂 key 描述时注入）：透明→#A9DBFF 肩→
+    #5CACFF 蓝核→透明 渐带 background-clip:text，1.8s 左→右扫过（V6.65 窄带参数）——
+    覆层透明域透出呼吸底字，::after 画序在底字之上；底字 filter 辉光随呼吸起伏（覆层
+    在父层内一并受光）。行高 1.0625rem：14px 加粗下最长关键描述（c1 根因总结 3 行 =
+    51px）垂直居中溢入卡底 padding（同 V6.36 口径），不越卡边框 */
 .fl-desc--key {
+  position: relative;
   font-family: 'Microsoft YaHei';
   font-weight: bold;
   font-size: 0.875rem;
   line-height: 1.0625rem;
-  color: #C9E7FF;
-  animation: flDescIn 0.3s ease-out, flKeyFlash 1.2s ease-in-out infinite;
+  /* V6.78（用户规格）：全角冒号版根因总结实测宽 ~758px > 两行容量（372×2）且 CJK 禁则
+     （，不能行首）使行1白耗一字符——负边距两侧各借卡内边距 8px：区域 372→388px
+     （容量 776 ≥ 758），全角标点版两行呈现；不涉卡片几何/连线端点，覆层 ::after
+     随同盒换行一致 */
+  margin: 0 -0.5rem;
+  color: #FFFFFF;
+  animation: flDescIn 0.3s ease-out, flKeyBreathe 2.4s ease-in-out infinite;
 }
-@keyframes flKeyFlash {
+.fl-desc--key::after {
+  content: attr(data-text);
+  position: absolute;
+  inset: 0;
+  background-image: linear-gradient(90deg,
+    rgba(255, 255, 255, 0) 0%, rgba(255, 255, 255, 0) 47.5%,
+    #A9DBFF 48.5%,
+    #5CACFF 49%, #5CACFF 51%,
+    #A9DBFF 51.5%,
+    rgba(255, 255, 255, 0) 52.5%, rgba(255, 255, 255, 0) 100%);
+  background-size: 300% 100%;
+  background-repeat: no-repeat;
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+  animation: flKeyShimmer 1.8s linear infinite;
+}
+@keyframes flKeyBreathe {
   0%, 100% {
-    color: #C9E7FF;
-    filter: drop-shadow(0 0 0 rgba(255, 255, 255, 0)) drop-shadow(0 0 0 rgba(255, 255, 255, 0));
+    color: #A9DBFF;
+    filter: drop-shadow(0 0 0 rgba(255, 255, 255, 0));
   }
   50% {
     color: #FFFFFF;
-    filter: drop-shadow(0 0 0.25rem rgba(255, 255, 255, 0.95)) drop-shadow(0 0 0.75rem rgba(255, 255, 255, 0.55));
+    filter: drop-shadow(0 0 0.5rem rgba(255, 255, 255, 0.65));
   }
+}
+@keyframes flKeyShimmer {
+  0% { background-position: 100% 0; }
+  100% { background-position: 0% 0; }
 }
 
 /* ---- 步骤条（chevron 箭头造型保持——宽度恒 221.29 与房间条竖线/胶囊坐标锚一致） ---- */
@@ -318,7 +350,7 @@
   box-sizing: border-box;
   width: 16rem;
   /* V6.2（用户规格）：高 7rem；内容容器距卡边 1rem；三行内容（工单号/单位名称/时间行）
-     行距 0.5rem；描述行删除（末行右侧增 展开 文字+向下角标，见 .fl-order__expand） */
+     行距 0.5rem；描述行删除（末行右侧增 详情 按钮，见 .fl-order__detail——V6.63） */
   height: 7rem;
   border-radius: 0.5rem;
   padding: 1rem;
@@ -334,19 +366,10 @@
 /* V6.37（用户规格）：静态展示卡（列表下方×4）——不可点击：默认指针、无 hover 高亮 */
 .fl-order--static { cursor: default; }
 .fl-order--static:hover { background: none; }
-/* V6.33（用户规格）：工单展开详情面板占位层——卡列流内（下方卡自动下移不遮盖）；
-    margin-top -1rem 抵消列 gap 使面板贴卡下沿（wo-panel 顶角方形=挂接设计）；
-    V6.34/36（用户规格）：展开态边框包住详情——面板补 1px 左右+底边（无顶边），
-    色随选中态（--wo-bc：蓝/灰）与卡侧边框连续；卡/详情分隔线=卡底边（恒灰，
-    见 OrderPanel 内联）；全局 border-box，16rem 外沿与卡两侧边框对齐，
-    底圆角沿用 wo-panel 自带 0 0 0.5rem 0.5rem */
-.fl-order-detail { margin-top: -1rem; }
-.fl-order-detail .wo-panel {
-  border: 1px solid var(--wo-bc, rgba(119, 119, 119, 1));
-  border-top: none;
-}
-.fl-order__expand { cursor: pointer; }
-.fl-order__expand--open svg { transition: transform 0.2s ease; }
+/* V6.63（用户规格）：详情按钮（弹窗触发；原「展开」文字+下三角角标废止）——
+    点击开/再点关（--open 态白字提示） */
+.fl-order__detail { cursor: pointer; }
+.fl-order__detail--open { color: #ffffff; }
 .fl-order__no {
   color: rgba(147, 147, 147, 1);
   font-family: 'HarmonyOS Sans SC', 'HarmonyOS Sans', 'HarmonyHeiTi', 'Microsoft YaHei', 'PingFang SC', sans-serif;
@@ -390,16 +413,15 @@
   line-height: 1.25rem;
   white-space: nowrap;
 }
-/* 末行：时间居左、展开（文字+向下角标）居右（V6.2 用户规格：#5CA2E9 / 0.75rem） */
+/* 末行：时间居左、详情按钮居右（V6.2 #5CA2E9 / 0.75rem；V6.63 无角标图标） */
 .fl-order__last {
   display: flex;
   align-items: center;
   justify-content: space-between;
 }
-.fl-order__expand {
+.fl-order__detail {
   display: inline-flex;
   align-items: center;
-  gap: 0.25rem;
   color: rgba(92, 162, 233, 1);
   font-family: 'HarmonyOS Sans SC', 'HarmonyOS Sans', 'HarmonyHeiTi', 'Microsoft YaHei', 'PingFang SC', sans-serif;
   font-size: 0.75rem;
@@ -408,6 +430,36 @@
 }
 .fl-order__check { position: absolute; top: 0; right: 0; width: 2rem; height: 2rem; pointer-events: none; }
 .fl-order__check img { width: 100%; height: 100%; display: block; }
+
+/* ---- V6.63（用户规格）：工单详情弹窗——全屏遮罩（点击关闭）+ 居中玻璃面板；
+     V6.65（用户规格）：单一表单（WorkOrderDetailPanel 承载全部信息行——
+     单号/集团名称/状态/投诉时间/工单耗时/归属地市/归属区县/产品编号） ---- */
+.wom-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 100;
+  background: rgba(2, 6, 30, 0.55);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.wom { width: 36rem; max-width: 90vw; }
+.wom-close {
+  margin-left: auto;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 1.5rem;
+  height: 1.5rem;
+  padding: 0;
+  border: none;
+  background: none;
+  cursor: pointer;
+}
+.wom-close:hover { background: rgba(92, 172, 255, 0.18); border-radius: 0.25rem; }
+.wom-body { padding: 0 1rem 1rem; }
+/* 弹窗内详情面板独立成块——四角圆角（原 0 0 .5rem .5rem 为卡下挂接版式） */
+.wom .wo-panel { border-radius: 0.5rem; }
 
 /* ---- 日志面板头（标题+计数 横向流式；表体 LogTable 本为流式滚动表） ---- */
 .fl-loghead {

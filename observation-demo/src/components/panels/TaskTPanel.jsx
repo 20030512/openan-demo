@@ -18,16 +18,16 @@ import wrapLines from './textWrap.js'
 // V4：首行任务描述/任务类型/任务上下文随案例切换（工单1 中断 / 工单2 质差——原文档 Task-T 消息口径）
 const CASE_TT = {
   c1: {
-    first: '发起专线投诉诊断：广州-深圳GE1508KA/P 专线中断',
+    first: '发起专线投诉诊断：广深VC-7301 专线中断',
     type: '集客专线业务投诉诊断',
     target: '基于用户的投诉上下文信息，对网络侧故障进行根因诊断，返回故障根因、修复建议等诊断结果信息。',
-    context: '电路编号：广州-深圳GE1508KA/P；产品编号：30122038024；A端接入端口：P36169-YWHJ-棠溪村微网格业务汇聚机房1（990）-1-1-TPN1EM10F-10-ETH；Z端接入端口：24696-华泰证券万国数据-L-T-3-1-1-TPK1EX4S-4-ETH.2501-2502；故障发生时间：2026-10-24 02:18:05；故障现象：专线中断；OSS侧事件流水号：CMCC-GZ-TSCLX-20261024-004403',
+    context: '电路编号：广深VC-7301；产品编号：30122075634；A端接入端口：P10001-A01-1-1-ETH；Z端接入端口：P10002-B01-1-1-ETH.200；故障发生时间：2026-10-24 02:18:05；故障现象：专线中断；OSS侧事件流水号：WO-20261024-7316',
   },
   c2: {
-    first: '发起专线投诉诊断：广州-汕头FE2100KA/P 专线质差',
+    first: '发起专线投诉诊断：广汕VC-8526 专线质差',
     type: '集客专线业务投诉诊断',
     target: '基于用户的投诉上下文信息，对网络侧故障进行根因诊断，返回故障根因、修复建议等诊断结果信息。',
-    context: '电路编号：广州-汕头FE2100KA/P；产品编号：30122038024；A端接入端口：P1310-中石油（黄埔大道中路-风光路）-VIP-JK-3A-1-1-TN81EG8E-1-ETH.409；Z端接入端口：21722-汕头潮阳关埠加油站-1-4-TND1EF8T-1-ETH.3532；故障发生时间：2026-10-28 10:20:08；故障现象：专线质差；OSS侧事件流水号：CMCC-GZ-TSCLX-20261028-008503',
+    context: '电路编号：广汕VC-8526；产品编号：30122075634；A端接入端口：P10003-C01-1-1-ETH.409；Z端接入端口：P10004-D01-1-1-ETH.353；故障发生时间：2026-10-28 10:20:08；故障现象：专线质差；OSS侧事件流水号：WO-20261028-5829',
   },
 }
 
@@ -35,6 +35,8 @@ const CASE_TT = {
 // V6.14：卡底 padding 0（react-panels 口径）——h = 8 + 20 + 4 + 行数×20
 const VALUE_W = 246
 const estH = (text) => 32 + wrapLines(text, VALUE_W) * 20
+// V6.71（用户规格）：任务上下文按「；」分段每段一行（段内仍可折行）——估值按分段求和
+const estCtxH = (text) => 32 + text.split('；').reduce((a, s) => a + wrapLines(s + '；', VALUE_W), 0) * 20
 
 export default function TaskTPanel(props) {
   const stage = useStageClock(props, 8)
@@ -45,7 +47,7 @@ export default function TaskTPanel(props) {
   // V6.18：rem 布局下 offset* 为已乘 k 的布局像素，而 railH 数字入 inline style 会被
   // remjsx ÷16 转 rem 再乘 16k（双乘 k）——测量值须 ÷k 还原设计 px（同 TBubble 高度修复）
   const [railH, setRailH] = useState(() => {
-    const h1 = estH(tt.type), h2 = estH(tt.target), h3 = estH(tt.context)
+    const h1 = estH(tt.type), h2 = estH(tt.target), h3 = estCtxH(tt.context)
     return { s: h1 / 2 - 4, d1: (h1 + h2) / 2, d2: (h2 + h3) / 2 }
   })
   const scrollRef = useRef(null)
@@ -149,7 +151,12 @@ export default function TaskTPanel(props) {
               </div>
               <div className={'td-card ir-reveal' + on(7)}>
                 <div className="td-card__label">任务上下文</div>
-                <div className="td-card__value">{tt.context}</div>
+                {/* V6.71（用户规格）：上下文按「；」分段——每段独立一行（段内超宽仍折行） */}
+                <div className="td-card__value">
+                  {tt.context.split('；').map((seg, i, arr) => (
+                    <div key={i}>{seg + (i < arr.length - 1 ? '；' : '')}</div>
+                  ))}
+                </div>
               </div>
             </div>
           </div>

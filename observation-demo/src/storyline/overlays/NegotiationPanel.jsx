@@ -4,7 +4,7 @@
 // 三角光束定射后自动选中，见 NegotiationDialog）；窗口结束延迟淡出卸载（动画收尾）。
 // 定位：以 zx-yx-neg 连线盒（roles-data LINES）水平居中、下缘 +12px；面板收起重适配下
 // 按 专线/粤西 卡中心中点锚定反向缩放（保比例、随两侧卡片刚体平移，见 roles.satCssStyle）。
-// V4：仅工单1 有协商（粤西发起，A端接入端口 P36169 名称不唯一 → 补充 cvlan=1208）；
+// V4：仅工单1 有协商（粤西发起，A端接入端口 P10001 名称不唯一 → 补充 cvlan=1208）；
 // 工单2 无协商——CASE_NEG 无 c2 条目，面板与世界态均不出现
 import React, { useEffect, useState } from 'react';
 import NegotiationDialog from '../../components/negotiation/NegotiationDialog';
@@ -15,7 +15,7 @@ const PANEL_W = 336; // 面板尺寸（NegotiationDialog.css）
 const PANEL_H = 295;
 const OUT_MS = 800; // 协商窗口结束后延迟卸载（淡出 + 光束/选中动画收尾）
 // 工单1/工单2 协商补充的 cvlan 与 Propose 文案（与 case-data.js 协商消息同源）；
-// V6.4（1020 文档修订）：工单2 新增协商——粤西 A端端口 P1310-中石油 不含子接口标识，
+// V6.4（1020 文档修订）：工单2 新增协商——粤西 A端端口 P10003-C01（V6.77 虚拟化）不含子接口标识，
 // 专线补 cvlan=409；cvlan 选项区末枚随案（c1 cvlan1208 / c2 cvlan409）
 const CASE_NEG = {
   c1: { vlan: 'cvlan1208', propose: '接入端口名称不唯一，该端口下存在多个业务接入口，请提供具体的子接口ID或VLAN ID以确认唯一的业务。' },

@@ -540,7 +540,8 @@ export function buildUiPatches(ctx) {
     P.set(s.dropId, { hide: true });
   }
   // V4：步骤5（问题处置）时长标签 per-case（设计烤入"3分钟"）——c1=调度处置 144 分钟 / c2=抢通执行 10 分钟
-  P.set(CHEVRONS[4].durId, { text: ctx.caseId === 'c1' ? '144分钟' : '10分钟' });
+  // V6.69（用户规格）：步骤时长格式改 xx分xx秒（与 StepBar bdur 同源口径）
+  P.set(CHEVRONS[4].durId, { text: ctx.caseId === 'c1' ? '144分12秒' : '10分08秒' });
   // V5.11（用户规格）：房间胶囊（客服/监控室/传输室）统一玻璃蓝样式——
   // border-radius 0.2rem(4px) / 180° 蓝渐变 + 中心辐射底（#5CACFF3D→透明、#91C7FF44→透明）/
   // 0.05rem(1px) #5CACFF 描边（容器 id 手工登记：23:135676 客服 / 23:135678 监控室 /
@@ -635,7 +636,7 @@ export function buildUiPatches(ctx) {
     P.set(CUST_IDS[slot], { text: CASES[k].customer, title: CASES[k].customer, s: NAME_FONT });
   }
   // V5.44（用户规格）：case1 工单卡图标换 case2 同款——设计烤入 c1 为 ic_public_cloud、
-  // c2 为 ic_ebg_hospital，医院客户（广州新市医院）应配医院图标（LayerView icon src 补丁）
+  // c2 为 ic_ebg_hospital，医院客户（某医院，V6.74 虚拟化）应配医院图标（LayerView icon src 补丁）
   P.set('23:137127', { src: '/icons/ic_ebg_hospital.svg' });
   // 面板收起（V2.12）：设计把手与箭头可点提示（收起后由覆盖层副本把手承担展开）；
   // 日志面板包裹层 pointer-events:none，其把手/箭头需显式恢复 auto 才可点
@@ -870,9 +871,9 @@ export function buildPatches(world, ctx) {
     hide(LOGS.zebraSpriteId);
     set(LOGS.zebraCellId, { s: { backgroundColor: 'rgba(119,119,119,0.15)' } });
     // 静态日志行占位文案修正（对应案例一第 2/4/8 条事件的展示文案，V4 工单1）
-    set(LOGS.rowTexts.row1Summary, { text: '进行集客专线业务投诉场景网络侧故障诊断，达成诊断目标，电路编号：广州-深圳GE1508KA/P。故障现象：专线中断。' });
+    set(LOGS.rowTexts.row1Summary, { text: '进行集客专线业务投诉场景网络侧故障诊断，达成诊断目标，电路编号：广深VC-7301。故障现象：专线中断。' });
     set(LOGS.rowTexts.row2To, { text: '粤西SPN网络智能' });
-    set(LOGS.rowTexts.row2Summary, { text: '对网络侧故障进行诊断，返回故障根因和修复建议等诊断结果信息。接入端口名称：P36169-YWHJ-棠溪村微网格业务汇聚机房1（990）-1-1-TPN1EM10F-10-ETH' });
+    set(LOGS.rowTexts.row2Summary, { text: '对网络侧故障进行诊断，返回故障根因和修复建议等诊断结果信息。接入端口名称：P10001-A01-1-1-ETH' });
     set(LOGS.rowTexts.row3From, { text: '粤西SPN网络智能' });
     // V2.13/V2.14：收起或非 16:9 视口（快照态）连线 sprite 位图无法随集群端点重适配 → 整组隐藏，
     // 由覆盖层 SVG 连线（StorylineOverlays 以伪 world 全量呈现）接管

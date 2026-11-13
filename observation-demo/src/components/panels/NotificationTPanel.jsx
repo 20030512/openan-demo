@@ -10,14 +10,13 @@ import { NOTIF_WEIGHTS } from '../../storyline/panel-timing.js'
    文字内容与动画保留——V3.26 动态分步：①抢通前元素（消息行 + 抢通前对比卡）→
    ②箭头图标 → ③抢通后元素（渐入直接挂卡/箭头元素，inline-block 排布不变） */
 
+// V6.70（用户规格）：删除「隧道状态」行——两卡各 2 行（时延/丢包率）
 const ROWS_BEFORE = [
-  { label: '隧道状态', value: 'down', color: '#e7434a' },
   { label: '时延', value: '28ms', color: '#e7434a' },
   { label: '丢包率', value: '0.9%', color: '#e7434a' },
 ]
 
 const ROWS_AFTER = [
-  { label: '隧道状态', value: 'up', color: '#36c18d' },
   { label: '时延', value: '5ms', color: '#36c18d' },
   { label: '丢包率', value: '0.01%', color: '#36c18d' },
 ]
@@ -47,8 +46,10 @@ function CompareCard({ cls, cardClass, headClass, title, titleColor, rows }) {
 export default function NotificationTPanel(props) {
   const stage = useStageClock(props, 3, NOTIF_WEIGHTS)
   const on = (k) => (stage >= k ? ' ir-on' : '')
+  // V6.70（用户规格）：删「隧道状态」行——卡 3→2 行、高 7.5→5.75rem，
+  // 面板 14.75→13rem；箭头纵向居中随调（44→30px ≈ 卡中）
   return (
-    <div className="glass-panel tdialog nt-panel" style={{ width: '22rem', height: '14.75rem' }}>
+    <div className="glass-panel tdialog nt-panel" style={{ width: '22rem', height: '13rem' }}>
       <div className="tdlg-head">
         <span className="tdlg-bar" style={{ background: '#715afb' }} />
         <span
@@ -84,12 +85,12 @@ export default function NotificationTPanel(props) {
             titleColor="#36c18d"
             rows={ROWS_AFTER}
           />
-          {/* ② 双箭头（负边距居中桥接抢通前→抢通后） */}
+          {/* ② 双箭头（负边距居中桥接抢通前→抢通后；V6.70 纵向居中随卡高 5.75rem 调整） */}
           <img
             className={'nt-arrow ir-reveal' + on(2)}
             src="/assets/ic-double-arrow.svg"
             alt=""
-            style={{ marginLeft: '-10.125rem', marginTop: '2.75rem', width: '2.25rem', height: '2.01875rem' }}
+            style={{ marginLeft: '-10.125rem', marginTop: '1.875rem', width: '2.25rem', height: '2.01875rem' }}
           />
         </div>
       </TBubble>

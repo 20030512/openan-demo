@@ -56,11 +56,13 @@ const PANEL_DEFS = [
     // V6.47（用户规格）：面板长度增加 0.5 倍——宽 498→747（意图面板窗口期专线卡
     // 未登场，加宽不遮卡；底部仍盖日志表，V5.53 层序语义不变）
     // V6.51→V6.52（用户规格）：c2 思考/行动 说明文字可上探面板标题（条）区——
-    // 面板高度回退 V6.47 版 232（不再加高），构图原位
+    // 面板高度回退 V6.47 版 232（不再加高），构图原位；
+    // V6.70（用户规格）：面板加高 232→240——输出末行距面板下边沿 0.5rem（见
+    // IntentRecognitionPanel V6.70：底锚文字/输入列同步补偿/冻结）
     key: 'intent', Comp: IntentRecognitionPanel,
     props: (pub) => ({ ...intentWindowOf(CASES[pub.caseId]), t: pub.t, mode: pub.mode, speed: pub.speed, timeScale: TIME_SCALE, caseId: pub.caseId }),
     when: (w, pub) => { const { t0, t1 } = intentWindowOf(CASES[pub.caseId]); return pub.t >= t0 && pub.t < t1; },
-    box: belowCard('WAIMO', 747, 232), anchor: () => center(CARDS.WAIMO.box),
+    box: belowCard('WAIMO', 747, 240), anchor: () => center(CARDS.WAIMO.box),
   },
   {
     // V3.30：调度处置面板三段分步；V6.2：位于 WAIMO 卡下方 0.5rem、左对齐卡视觉左缘
@@ -121,7 +123,8 @@ const PANEL_DEFS = [
     key: 'notif-t', Comp: NotificationTPanel,
     props: (pub) => ({ ...notifWindowOf(CASES[pub.caseId]), t: pub.t, mode: pub.mode, speed: pub.speed, timeScale: TIME_SCALE, caseId: pub.caseId }),
     when: (w, pub) => { const { t0, t1 } = notifWindowOf(CASES[pub.caseId]); return pub.t >= t0 && pub.t < t1; },
-    box: belowLine('waimo-zx-notif', 352, 236), anchor: () => WZ_MID,
+    // V6.70（用户规格）：Notification-T 删「隧道状态」行——面板高 236→208（14.75→13rem）
+    box: belowLine('waimo-zx-notif', 352, 208), anchor: () => WZ_MID,
   },
   {
     // V6.35（用户规格）：Authorization-T 详细交互流程面板（at4 · 仅工单2 问题处置）——

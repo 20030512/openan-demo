@@ -19,8 +19,11 @@
 // 见 panel-timing INTENT_WEIGHTS）；面板高度与元素垂直位置维持 V6.47 版
 //（232、构图原位）——文字可超出面板标题（条）底部向上延伸（思考文字三行上探
 // 标题条区，标题文字在左侧不遮挡）。
-// V6.56（用户规格）：c1 同步补充——文案按案（c1 中断/广东省建行广深、c2 质差），
+// V6.56（用户规格）：c1 同步补充——文案按案（c1 中断/某银行广深、c2 质差），
 // 展示节奏两案一致。
+// V6.70（用户规格）：面板加高 232→240——输出末行（产品编号行）距面板下边沿
+// 0.5rem（8px）；底锚说明文字 bottom 随体高 +8（绝对位置不变：199−胶囊顶+3.2）、
+// 输入列包裹层冻结原体高 191（垂直居中不随加高下移 4px）
 import React from 'react'
 import useStageClock from './useStageClock.js'
 import { INTENT_WEIGHTS } from '../../storyline/panel-timing.js'
@@ -33,29 +36,33 @@ import { INTENT_WEIGHTS } from '../../storyline/panel-timing.js'
 export const CASE_INPUT = {
   c1: [
     '投诉现象：客户表示广州至深圳的专线没法使用，对端数据包收不到，要求尽快核查处理。',
-    '客户所在地：广州市白云区****',
+    '客户所在地：广州市云溪区',
   ],
   c2: [
     '投诉现象：客户表示专线使用感知差，网络间歇性卡顿、丢包，业务时断时续，影响业务使用。',
-    '客户所在地：广州市越秀区**',
+    '客户所在地：广州市松岚区',
   ],
 }
 const CASE_OUTPUT = { c1: '集客传输专线投诉中断场景', c2: '传输专线质差投诉场景' }
+// V6.67（用户规格）：输出增行「产品编号」——行动定位段获取的两案同号；
+// V6.76→V6.78（用户规格）：编号/地址隐藏改随机虚拟数据（*** 不可读）——两案同号
+const PRODUCT_NO = '30122075634'
 
 // V6.51/V6.56（用户规格）：思考/行动 胶囊上方说明文字（文案按案定稿——
 // c1 业务全阻·中断：排除后聚焦链路中断、判定传输专线中断；
-// c2 质差：剔除链路中断、判定传输专线劣化；两案定位段同款——广东省建行广深 SDH 专线）
+// c2 质差：剔除链路中断、判定传输专线劣化；两案定位段同款——某银行广深 SPN 集客专线；
+// V6.67（用户规格）：定位表述 SDH传输专线→SPN集客专线）
 const CASE_REASON = {
   c1: '用户反馈广州至深圳专线完全不可用、对端数据包收不到。先排除费用争议、语音专线故障两类场景；因业务完全中断，直接聚焦链路中断类问题，初步锁定传输专线中断、数据专线中断两个方向。',
   c2: '用户反馈专线感知差、间歇性卡顿丢包、业务时通时断。先排除费用争议、语音专线故障两类场景；因业务未完全中断，再剔除全部链路中断类问题，初步锁定传输专线劣化、数据专线劣化两个方向。',
 }
 const CASE_ACTION = {
   c1: [
-    '调用综合资源系统专线查询接口，以客户编码+广州—深圳跨域路由为筛选条件，匹配在用专线清单，定位到广东省建行广深方向SDH传输专线并获取产品编号。',
+    '调用综合资源系统专线查询接口，以客户编码+广州—深圳跨域路由为筛选条件，匹配在用专线清单，定位到某银行广深方向SPN集客专线并获取产品编号。',
     '经核实该专线归属传输专业运维，结合业务完全中断现象，最终判定为传输专线中断。',
   ],
   c2: [
-    '调用综合资源系统专线查询接口，以客户编码+广州—深圳跨域路由为筛选条件，匹配在用专线清单，定位到广东省建行广深方向SDH传输专线并获取产品编号。',
+    '调用综合资源系统专线查询接口，以客户编码+广州—深圳跨域路由为筛选条件，匹配在用专线清单，定位到某银行广深方向SPN集客专线并获取产品编号。',
     '经核实该专线归属传输专业运维，结合间歇性质量异常现象，最终判定为传输专线劣化。',
   ],
 }
@@ -68,7 +75,7 @@ export default function IntentRecognitionPanel(props) {
   const on = (k) => (step >= k ? ' ir-on' : '')
   const items = CASE_INPUT[ck]
   return (
-    <div className="glass-panel fp-col" style={{ width: 747, height: 232 }}>
+    <div className="glass-panel fp-col" style={{ width: 747, height: 240 }}>
       <div className="fp-head">
         <div className="p-title-bar" />
         <div className="p-title-text">投诉识别：意图识别</div>
@@ -106,29 +113,30 @@ export default function IntentRecognitionPanel(props) {
         <div className={'p-pill ir-reveal ir-reveal--fast' + on(5)} style={{ left: 291, top: 131, width: 80 }}>观察</div>
 
         {/* V6.51/V6.52/V6.56（用户规格，两案）：思考/行动 胶囊上方说明文字——左缘与
-            胶囊左缘对齐（思考 269 / 行动 423），下缘距胶囊 0.2rem（bottom 锚定 = 191 −
-            胶囊顶 + 3.2，折行向上自适应），宽 = 面板右内边沿 731 − 左缘（不超出面板、
-            可换行；可上探超出面板标题（条）底部——fp-body 无裁剪，思考文字三行
-            上探标题条区，标题文字在左侧 x<269 不遮挡）；窗口化显示：思考文字 段2
-            （行动胶囊出现即隐）、行动第一段 段3（第二段出现即隐）、行动第二段 段4
-            （观察胶囊出现即隐）；文案按案（CASE_REASON/CASE_ACTION） */}
+            胶囊左缘对齐（思考 269 / 行动 423），下缘距胶囊 0.2rem（V6.70 bottom 锚定 =
+            199 − 胶囊顶 + 3.2，随体高 +8 绝对位置不变，折行向上自适应），宽 = 面板右
+            内边沿 731 − 左缘（不超出面板、可换行；可上探超出面板标题（条）底部——
+            fp-body 无裁剪，思考文字三行上探标题条区，标题文字在左侧 x<269 不遮挡）；
+            窗口化显示：思考文字 段2（行动胶囊出现即隐）、行动第一段 段3（第二段出现
+            即隐）、行动第二段 段4（观察胶囊出现即隐）；文案按案（CASE_REASON/CASE_ACTION） */}
         <div className={'ir-note' + (step === 2 ? ' ir-on' : '')}
-          style={{ left: 269, bottom: 171.2, width: 462 }}>
+          style={{ left: 269, bottom: 179.2, width: 462 }}>
           {CASE_REASON[ck]}
         </div>
         <div className={'ir-note' + (step === 3 ? ' ir-on' : '')}
-          style={{ left: 423, bottom: 135.2, width: 308 }}>
+          style={{ left: 423, bottom: 143.2, width: 308 }}>
           {CASE_ACTION[ck][0]}
         </div>
         <div className={'ir-note' + (step === 4 ? ' ir-on' : '')}
-          style={{ left: 423, bottom: 135.2, width: 308 }}>
+          style={{ left: 423, bottom: 143.2, width: 308 }}>
           {CASE_ACTION[ck][1]}
         </div>
 
         {/* 正文横向流式：输入列（左，垂直居中）；输出改绝对定位（V6.1 用户规格：
             距观察胶囊 2rem——左缘 = 胶囊右缘 + 48，纵向对齐胶囊行）；
-            V6.47：输入列随面板加宽 185→285（箭头延伸至光轮左缘） */}
-        <div className="fp-row" style={{ position: 'absolute', inset: 0, padding: '0 1rem' }}>
+            V6.47：输入列随面板加宽 185→285（箭头延伸至光轮左缘）；
+            V6.70：包裹层冻结原体高 191（面板加高后垂直居中不随之下移） */}
+        <div className="fp-row" style={{ position: 'absolute', top: 0, left: 0, right: 0, height: 191, padding: '0 1rem' }}>
           {/* ① 输入：标题+箭头+三行投诉文本整体渐入（左侧输入不分开显示） */}
           <div className={'fp-col--c ir-reveal' + on(1)} style={{ width: 285, height: '100%' }}>
             {/* V6.49（用户规格）：输入/输出 4 字加粗加大一号（.p-io-key）；
@@ -149,15 +157,19 @@ export default function IntentRecognitionPanel(props) {
             左缘 = 胶囊右缘 + 48 = 371 + 48 = 419），纵向对齐胶囊行
             （title 顶 ≈ 胶囊行上沿；箭头自胶囊右缘起左探）；
             V6.47：输出列随面板加宽右移至 419，箭头延伸至面板右内边沿（svg 347） */}
-        <div className={'fp-col--c ir-reveal' + on(6)} style={{ position: 'absolute', left: 419, top: 119, alignItems: 'flex-start' }}>
+        {/* V6.67（用户规格）：输出增行「产品编号」——输出文字改 io 列表
+            两行（样式/行距同输入列）；列顶 119→117（两行贴面板底内沿 190.6 ≤ 191），
+            title 顶仍约对齐观察胶囊行上沿 */}
+        <div className={'fp-col--c ir-reveal' + on(6)} style={{ position: 'absolute', left: 419, top: 117, alignItems: 'flex-start' }}>
           <div className="p-io-title" style={{ position: 'static' }}><span className="p-io-key">输出</span>：投诉现象和投诉意图</div>
           <svg width="347" height="16" viewBox="0 0 347 16" fill="none" style={{ display: 'block', marginTop: 2, marginLeft: -31 }}>
             <path d="M0 8 H338" stroke="#09AA71" strokeWidth="2" strokeLinecap="round" />
             <path d="M332 3 L338 8 L332 13" stroke="#09AA71" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
           </svg>
-          {/* V6.50（用户规格）：输出行前圆点修复——position static→relative，
-              ::before 圆点锚回本元素（原锚至列容器左上、被白色标题字遮挡不可见） */}
-          <div className="p-io-sub" style={{ position: 'relative', marginTop: 1.6 }}>{CASE_OUTPUT[ck]}</div>
+          <ul className="p-io-list" style={{ position: 'static', marginTop: 1.6, width: 308 }}>
+            <li>{CASE_OUTPUT[ck]}</li>
+            <li>产品编号：{PRODUCT_NO}</li>
+          </ul>
         </div>
       </div>
     </div>
