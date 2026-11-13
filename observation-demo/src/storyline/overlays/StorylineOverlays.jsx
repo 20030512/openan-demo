@@ -23,12 +23,14 @@ import FlowLogPanel from '../flow/FlowLogPanel';
 // V6.1：能开平台卡（注册中心子卡内嵌）——常驻拓扑元素，入画布层（日志拖高时被覆盖）
 import PlatformNodeCard from '../../components/panels/PlatformNodeCard.jsx';
 import { satCssStyle } from '../roles';
-import { measureText, FONT } from '../flow/geometry';
+import { measureText, FONT, lcBox } from '../flow/geometry';
+import { T, getLang } from '../../i18n';
 
 // 能开平台（快照/回放常驻）；V5.57（用户规格）：平台卡下边沿距注册中心子卡 0.75rem（高 126）
 const PLATFORM = { x: 369, y: 270, w: 144, h: 126 };
 // 流程中心（V6.3：垂直居中 513..599 中心 556；设计节点隐藏后画布层流式重建）
-const LC_BOX = { x: 401, y: 513, w: 80, h: 86 };
+// V6.80：卡宽随译名增长（EN Process Center 超原定宽 80——几何单源 geometry.lcBox，
+// 中心恒 441 两侧对称生长，连线端点/集群锚不漂移）
 
 // ---- V6.3（用户规格）：房间条五胶囊——固定步骤分组（两案一致）：
 // 客服（投诉受理）/ 监控室（投诉识别+定界定位）/ 传输室（根因定位）/
@@ -39,44 +41,75 @@ const LC_BOX = { x: 401, y: 513, w: 80, h: 86 };
 const chipC = (i) => CHEVRONS[i].box.x + CHEVRONS[i].box.w / 2;
 const chipR = (i) => CHEVRONS[i].box.x + CHEVRONS[i].box.w;
 const ROOM_GROUPS = [
-  { name: '客服', first: 0, last: 0, gate: 0 },
-  { name: '监控室', first: 1, last: 2, gate: 0 },
-  { name: '传输室', first: 3, last: 3, gate: 3 },
-  { name: '监控室/传输室', first: 4, last: 5, gate: 4 },
-  { name: '监控室', first: 6, last: 6, gate: 6 },
+  { name: 'room.service', first: 0, last: 0, gate: 0 },
+  { name: 'room.monitor', first: 1, last: 2, gate: 0 },
+  { name: 'room.transport', first: 3, last: 3, gate: 3 },
+  { name: 'room.monitorTransport', first: 4, last: 5, gate: 4 },
+  { name: 'room.monitor', first: 6, last: 6, gate: 6 },
 ];
 const ROOM_PILLS = ROOM_GROUPS.map((g) => {
   const w = measureText(g.name, '400 16px ' + FONT) + 32;
   const c = (chipC(g.first) + chipC(g.last)) / 2;
-  return { name: g.name, w, left: c - w / 2, gate: g.gate };
+  return { name: g.name, w, c, left: c - w / 2, gate: g.gate };
 });
-const ROOM_SEGS = [];
-for (let i = 0; i < ROOM_PILLS.length - 1; i++) {
-  ROOM_SEGS.push({ left: ROOM_PILLS[i].left + ROOM_PILLS[i].w, right: ROOM_PILLS[i + 1].left, gate: ROOM_PILLS[i + 1].gate });
-}
+// V6.79（用户规格）：语言切换后按译名重算胶囊宽度并**重居中**（left = 组中心 c − 新宽/2）
+// ——原版仅改宽不改位，EN 长译名使胶囊整体右移、不再与下方步骤组垂直对齐（客服↔投诉受理、
+// 监控室↔步骤2/3 界、传输室↔根因定位、监控室/传输室↔步骤5/6 界、监控室↔投诉报结）；zh 恒等于常量版
+let _pillLang = null;
+let _pillCache = null;
+const roomPills = () => {
+  const l = getLang();
+  if (l === 'zh') return ROOM_PILLS;
+  if (_pillLang === l && _pillCache) return _pillCache;
+  _pillLang = l;
+  _pillCache = ROOM_PILLS.map((p) => {
+    const w = measureText(T(p.name), '400 16px ' + FONT) + 32;
+    return { ...p, w, left: p.c - w / 2 };
+  });
+  return _pillCache;
+};
 // V6.39（用户规格）：两端封口——左端纵线对齐投诉受理 chip 左沿、右端纵线对齐投诉报结
 // chip 右沿（揭示随首/末组：左随客服常驻、右随步骤6）；两端横向虚线自纵线连至
-// 首/末胶囊外沿（独立数组——不并入 ROOM_SEGS，避免派生 ROOM_GLIDES 误生光点）
+// 首/末胶囊外沿（独立数组——不并入 segs，避免派生 glides 误生光点）
 const FIRST_STEP = ROOM_GROUPS[0].first, LAST_STEP = ROOM_GROUPS[ROOM_GROUPS.length - 1].last;
-const LAST_PILL = ROOM_PILLS[ROOM_PILLS.length - 1];
-const ROOM_END_SEGS = [
-  { left: CHEVRONS[FIRST_STEP].box.x, right: ROOM_PILLS[0].left, gate: ROOM_GROUPS[0].gate },
-  { left: LAST_PILL.left + LAST_PILL.w, right: chipR(LAST_STEP), gate: ROOM_GROUPS[ROOM_GROUPS.length - 1].gate },
-];
-const ROOM_SEPS = ROOM_GROUPS.slice(1).map((g) => ({ left: chipR(g.first - 1), gate: g.gate }));
-ROOM_SEPS.unshift({ left: CHEVRONS[FIRST_STEP].box.x, gate: ROOM_GROUPS[0].gate });
-ROOM_SEPS.push({ left: chipR(LAST_STEP), gate: ROOM_GROUPS[ROOM_GROUPS.length - 1].gate });
 // 各段登场光点：行程 = (线宽−80)/2；g0（客服—监控室）随 WAIMO t=0（V5.12 收窄
 // ±89.97、2.92s）、g1（监控室—传输室）随步骤3（等速 74.9px/s）、g2（传输室—
 // 监控室·传输室）随步骤4、g3（监控室·传输室—监控室）随步骤6（38.7px/s）——
 // 窗口 = 行程 1 周业务时长（dur×4×speed）；完成态静态中点（V5.63）
 const GLIDE0 = { lim: 89.97, dur: 2.92 };
-const ROOM_GLIDES = ROOM_SEGS.map((s, i) => {
-  const lim = i === 0 ? GLIDE0.lim : (s.right - s.left - 80) / 2;
-  const dur = i === 0 ? GLIDE0.dur : (s.right - s.left - 80) / (i === 1 ? 74.9 : 38.7);
-  return { left: s.left + lim, lim, dur, gate: i === 0 ? 0 : s.gate };
-});
-const glideCss = () => ROOM_GLIDES.map((g, i) =>
+// V6.79：派生几何（组间连线/两端封口/登场光点）随当前语言胶囊重算——胶囊重居中后
+// 相邻外沿间距随译名宽度变化；zh 版与原模块常量逐位一致（g0 lim/dur 沿 V5.12 定值）
+const pillGeoFor = (pills, zh) => {
+  const segs = [];
+  for (let i = 0; i < pills.length - 1; i++) {
+    segs.push({ left: pills[i].left + pills[i].w, right: pills[i + 1].left, gate: pills[i + 1].gate });
+  }
+  const last = pills[pills.length - 1];
+  const endSegs = [
+    { left: CHEVRONS[FIRST_STEP].box.x, right: pills[0].left, gate: ROOM_GROUPS[0].gate },
+    { left: last.left + last.w, right: chipR(LAST_STEP), gate: ROOM_GROUPS[ROOM_GROUPS.length - 1].gate },
+  ];
+  const glides = segs.map((s, i) => {
+    const natural = (s.right - s.left - 80) / 2;
+    const lim = i === 0 && zh ? GLIDE0.lim : natural;
+    const dur = i === 0 ? GLIDE0.dur : (s.right - s.left - 80) / (i === 1 ? 74.9 : 38.7);
+    return { left: s.left + lim, lim, dur, gate: i === 0 ? 0 : s.gate };
+  });
+  return { segs, endSegs, glides };
+};
+let _geoLang = null;
+let _geoCache = null;
+const roomGeo = () => {
+  const l = getLang();
+  if (_geoLang === l && _geoCache) return _geoCache;
+  _geoLang = l;
+  _geoCache = pillGeoFor(roomPills(), l === 'zh');
+  return _geoCache;
+};
+const ROOM_SEPS = ROOM_GROUPS.slice(1).map((g) => ({ left: chipR(g.first - 1), gate: g.gate }));
+ROOM_SEPS.unshift({ left: CHEVRONS[FIRST_STEP].box.x, gate: ROOM_GROUPS[0].gate });
+ROOM_SEPS.push({ left: chipR(LAST_STEP), gate: ROOM_GROUPS[ROOM_GROUPS.length - 1].gate });
+const glideCss = (glides) => glides.map((g, i) =>
   '.st-glide' + i + '{animation:stGlide' + i + ' ' + g.dur + 's linear 1 forwards}' +
   '@keyframes stGlide' + i + '{' +
     '0%{transform:translateX(' + (-g.lim / 16) + 'rem);opacity:0}' +
@@ -96,7 +129,7 @@ function LogSensor({ onActivate, fit }) {
       style={{ left: b.x, top: b.y + 14, width: b.w, height: b.h - 14, ...fit }}
       onWheel={onActivate}
       onPointerDown={onActivate}
-      title="A2A-T协作日志"
+      title={T('log.title')}
     />
   );
 }
@@ -126,8 +159,7 @@ export default function StorylineOverlays() {
     * (typeof window !== 'undefined' ? window.devicePixelRatio || 1 : 1);
   const snapSep = (x) => Math.round(x * sepG) / sepG;
   // V6.3：各段登场光点状态（窗口 = 行程 1 周业务时长；完成态静态中点；快照态不呈现）
-  const glideState = (i) => {
-    const g = ROOM_GLIDES[i];
+  const glideState = (g) => {
     if (!live) return null;
     if (pub.world.caseDone) return { left: g.left };
     if (!stepOn(g.gate)) return null;
@@ -168,9 +200,11 @@ export default function StorylineOverlays() {
     if (sel && String(sel).length > 0) return;
     if (pub.mode === 'playing' || pub.mode === 'paused') pub.api.play();
   };
+  const geo = roomGeo();
+  const LC = lcBox();
   return (
     <>
-      <style>{glideCss()}</style>
+      <style>{glideCss(geo.glides)}</style>
       <div className="st-pan" style={panT}>
         <div className="st-zoomwrap" style={zoomStyle}>
           {/* V6.0（用户规格"放大后超出画布的区域不要展示"）：画布内容（房间条/连线/卡片/
@@ -190,10 +224,10 @@ export default function StorylineOverlays() {
                 zIndex: 40, ...satCssStyle(pub, PLATFORM, { x: PLATFORM.x + PLATFORM.w / 2, y: PLATFORM.y + PLATFORM.h / 2 }) }}>
                 <PlatformNodeCard />
               </div>
-              <div className="fl-lc" style={{ position: 'absolute', left: LC_BOX.x, top: LC_BOX.y, width: LC_BOX.w, height: LC_BOX.h,
-                zIndex: 40, ...satCssStyle(pub, LC_BOX, { x: 441, y: 556 }) }}>
+              <div className="fl-lc" style={{ position: 'absolute', left: LC.x, top: LC.y, width: LC.w, height: LC.h,
+                zIndex: 40, ...satCssStyle(pub, LC, { x: 441, y: 556 }) }}>
                 <img src="/icons/ic_ict_locate_to_topology.svg" alt="" draggable={false} />
-                <div className="fl-lc__name">流程中心</div>
+                <div className="fl-lc__name">{T('agent.lc')}</div>
               </div>
               {live ? <ConnectionFlow world={pub.world} pub={pub} /> : null}
             </div>
@@ -210,21 +244,21 @@ export default function StorylineOverlays() {
               组界竖线 + 各段登场光点——设计节点已隐藏（roles FLOW_HIDE 含
               客服—监控室连线 23:135683），全部随悬浮层重建（不随 Z/pan、随 F）；
               胶囊/连线/竖线/光点随对齐步骤揭示（gate 0 = 常驻） */}
-          {ROOM_PILLS.map((p, i) => stepOn(p.gate) ? (
-            <div key={'rp' + i} className="st-roompill" style={{ left: p.left, width: p.w }}>{p.name}</div>
+          {roomPills().map((p, i) => stepOn(p.gate) ? (
+            <div key={'rp' + i} className="st-roompill" style={{ left: p.left, width: p.w }}>{T(p.name)}</div>
           ) : null)}
-          {ROOM_SEGS.map((s, i) => stepOn(s.gate) ? (
+          {geo.segs.map((s, i) => stepOn(s.gate) ? (
             <div key={'rl' + i} className="st-roomline" style={{ left: s.left, width: s.right - s.left }} />
           ) : null)}
           {/* V6.39（用户规格）：两端封口横向虚线（纵线 ↔ 首/末胶囊外沿） */}
-          {ROOM_END_SEGS.map((s, i) => stepOn(s.gate) ? (
+          {geo.endSegs.map((s, i) => stepOn(s.gate) ? (
             <div key={'rel' + i} className="st-roomline" style={{ left: s.left, width: s.right - s.left }} />
           ) : null)}
           {ROOM_SEPS.map((s, i) => stepOn(s.gate) ? (
             <div key={'rs' + i} className="st-roomsep" style={{ left: snapSep(s.left) }} />
           ) : null)}
-          {ROOM_GLIDES.map((g, i) => {
-            const st = glideState(i);
+          {geo.glides.map((g, i) => {
+            const st = glideState(g);
             if (!st) return null;
             return <div key={'rg' + i} className={'st-glidebar' + (st.anim ? ' st-glide' + i : '')} style={{ left: st.left }} />;
           })}

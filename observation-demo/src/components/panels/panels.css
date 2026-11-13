@@ -582,6 +582,8 @@
 .wo-label {
   flex: none;
   width: 3.5rem;
+  /* label 右对齐：紧贴值列（label-value 关联最短视线；EN 短标签 City/Status 亦贴齐） */
+  text-align: right;
   font-family: var(--font-yh);
   font-size: 0.875rem;
   line-height: 1.375rem;
@@ -631,7 +633,8 @@
 .notif-row + .notif-row { margin-top: 0.5rem; }
 .notif-label {
   display: inline-block;
-  width: 3.25rem;
+  /* V6.81（用户规格）：定宽→min-width——EN Packet Loss 超定宽 12.7px；zh 两字恒 52px 不变 */
+  min-width: 3.25rem;
   font-size: 0.75rem;
   line-height: 1.25rem;
   color: #c9c9c9;

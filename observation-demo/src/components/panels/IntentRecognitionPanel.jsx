@@ -27,44 +27,27 @@
 import React from 'react'
 import useStageClock from './useStageClock.js'
 import { INTENT_WEIGHTS } from '../../storyline/panel-timing.js'
+import { T, isEn } from '../../i18n'
 
-// V4：输入/输出文案随案例切换（工单1 不可用 / 工单2 质差）
-// V6.4（用户规格）：投诉现象文案更新 + 新增 客户所在地 行；产品类型/接入方式行删除；
-// 工单1 输出改「集客传输专线投诉中断场景」
+// V4：输入/输出文案随案例切换（工单1 不可用 / 工单2 质差）——值为 i18n 占位键（ir.*）
 // V6.32：导出 CASE_INPUT——工单展开详情面板（OrderPanel）的工单描述/归属地市/
 // 归属区县 与本面板投诉现象/客户所在地 同源一致
 export const CASE_INPUT = {
-  c1: [
-    '投诉现象：客户表示广州至深圳的专线没法使用，对端数据包收不到，要求尽快核查处理。',
-    '客户所在地：广州市云溪区',
-  ],
-  c2: [
-    '投诉现象：客户表示专线使用感知差，网络间歇性卡顿、丢包，业务时断时续，影响业务使用。',
-    '客户所在地：广州市松岚区',
-  ],
+  c1: ['ir.inPhen.c1', 'ir.inLoc.c1'],
+  c2: ['ir.inPhen.c2', 'ir.inLoc.c2'],
 }
-const CASE_OUTPUT = { c1: '集客传输专线投诉中断场景', c2: '传输专线质差投诉场景' }
-// V6.67（用户规格）：输出增行「产品编号」——行动定位段获取的两案同号；
-// V6.76→V6.78（用户规格）：编号/地址隐藏改随机虚拟数据（*** 不可读）——两案同号
+const CASE_OUTPUT = { c1: 'ir.out.c1', c2: 'ir.out.c2' }
+// V6.67（用户规格）：输出增行「产品编号」——行动定位段获取的两案同号
 const PRODUCT_NO = '30122075634'
 
-// V6.51/V6.56（用户规格）：思考/行动 胶囊上方说明文字（文案按案定稿——
-// c1 业务全阻·中断：排除后聚焦链路中断、判定传输专线中断；
-// c2 质差：剔除链路中断、判定传输专线劣化；两案定位段同款——某银行广深 SPN 集客专线；
-// V6.67（用户规格）：定位表述 SDH传输专线→SPN集客专线）
+// 思考/行动 胶囊上方说明文字（文案按案定稿，i18n 键 ir.reason.* / ir.action.*）
 const CASE_REASON = {
-  c1: '用户反馈广州至深圳专线完全不可用、对端数据包收不到。先排除费用争议、语音专线故障两类场景；因业务完全中断，直接聚焦链路中断类问题，初步锁定传输专线中断、数据专线中断两个方向。',
-  c2: '用户反馈专线感知差、间歇性卡顿丢包、业务时通时断。先排除费用争议、语音专线故障两类场景；因业务未完全中断，再剔除全部链路中断类问题，初步锁定传输专线劣化、数据专线劣化两个方向。',
+  c1: 'ir.reason.c1',
+  c2: 'ir.reason.c2',
 }
 const CASE_ACTION = {
-  c1: [
-    '调用综合资源系统专线查询接口，以客户编码+广州—深圳跨域路由为筛选条件，匹配在用专线清单，定位到某银行广深方向SPN集客专线并获取产品编号。',
-    '经核实该专线归属传输专业运维，结合业务完全中断现象，最终判定为传输专线中断。',
-  ],
-  c2: [
-    '调用综合资源系统专线查询接口，以客户编码+广州—深圳跨域路由为筛选条件，匹配在用专线清单，定位到某银行广深方向SPN集客专线并获取产品编号。',
-    '经核实该专线归属传输专业运维，结合间歇性质量异常现象，最终判定为传输专线劣化。',
-  ],
+  c1: ['ir.action.1', 'ir.action.c1p2'],
+  c2: ['ir.action.1', 'ir.action.c2p2'],
 }
 
 export default function IntentRecognitionPanel(props) {
@@ -78,7 +61,7 @@ export default function IntentRecognitionPanel(props) {
     <div className="glass-panel fp-col" style={{ width: 747, height: 240 }}>
       <div className="fp-head">
         <div className="p-title-bar" />
-        <div className="p-title-text">投诉识别：意图识别</div>
+        <div className="p-title-text">{T('ir.title')}</div>
       </div>
 
       <div className="fp-body">
@@ -108,9 +91,9 @@ export default function IntentRecognitionPanel(props) {
              环上时钟位 = 环顶 +24.75 / +60.75 / +132.75；
               V6.1 用户规格：三胶囊渐入提速 2 倍——ir-reveal--fast；
               V6.47：胶囊随光轮整体右移 +101（环心 272.4→373.5）） */}
-        <div className={'p-pill ir-reveal ir-reveal--fast' + on(2)} style={{ left: 269, top: 23, width: 73 }}>思考</div>
-        <div className={'p-pill ir-reveal ir-reveal--fast' + on(3)} style={{ left: 423, top: 59, width: 73 }}>行动</div>
-        <div className={'p-pill ir-reveal ir-reveal--fast' + on(5)} style={{ left: 291, top: 131, width: 80 }}>观察</div>
+        <div className={'p-pill ir-reveal ir-reveal--fast' + on(2)} style={{ left: 269, top: 23, width: 73 }}>{T('ir.think')}</div>
+        <div className={'p-pill ir-reveal ir-reveal--fast' + on(3)} style={{ left: 423, top: 59, width: 73 }}>{T('ir.act')}</div>
+        <div className={'p-pill ir-reveal ir-reveal--fast' + on(5)} style={{ left: 291, top: 131, width: 80 }}>{T('ir.observe')}</div>
 
         {/* V6.51/V6.52/V6.56（用户规格，两案）：思考/行动 胶囊上方说明文字——左缘与
             胶囊左缘对齐（思考 269 / 行动 423），下缘距胶囊 0.2rem（V6.70 bottom 锚定 =
@@ -118,19 +101,25 @@ export default function IntentRecognitionPanel(props) {
             内边沿 731 − 左缘（不超出面板、可换行；可上探超出面板标题（条）底部——
             fp-body 无裁剪，思考文字三行上探标题条区，标题文字在左侧 x<269 不遮挡）；
             窗口化显示：思考文字 段2（行动胶囊出现即隐）、行动第一段 段3（第二段出现
-            即隐）、行动第二段 段4（观察胶囊出现即隐）；文案按案（CASE_REASON/CASE_ACTION） */}
-        <div className={'ir-note' + (step === 2 ? ' ir-on' : '')}
-          style={{ left: 269, bottom: 179.2, width: 462 }}>
-          {CASE_REASON[ck]}
-        </div>
-        <div className={'ir-note' + (step === 3 ? ' ir-on' : '')}
-          style={{ left: 423, bottom: 143.2, width: 308 }}>
-          {CASE_ACTION[ck][0]}
-        </div>
-        <div className={'ir-note' + (step === 4 ? ' ir-on' : '')}
-          style={{ left: 423, bottom: 143.2, width: 308 }}>
-          {CASE_ACTION[ck][1]}
-        </div>
+            即隐）、行动第二段 段4（观察胶囊出现即隐）；文案按案（CASE_REASON/CASE_ACTION）；
+            V6.83（用户规格）：EN 不展示 Reason/Action 说明文字（英文长句上探折行
+            版式失衡）——仅 zh 渲染，胶囊/时序不变 */}
+        {!isEn() ? (
+          <>
+            <div className={'ir-note' + (step === 2 ? ' ir-on' : '')}
+              style={{ left: 269, bottom: 179.2, width: 462 }}>
+              {T(CASE_REASON[ck])}
+            </div>
+            <div className={'ir-note' + (step === 3 ? ' ir-on' : '')}
+              style={{ left: 423, bottom: 143.2, width: 308 }}>
+              {T(CASE_ACTION[ck][0])}
+            </div>
+            <div className={'ir-note' + (step === 4 ? ' ir-on' : '')}
+              style={{ left: 423, bottom: 143.2, width: 308 }}>
+              {T(CASE_ACTION[ck][1])}
+            </div>
+          </>
+        ) : null}
 
         {/* 正文横向流式：输入列（左，垂直居中）；输出改绝对定位（V6.1 用户规格：
             距观察胶囊 2rem——左缘 = 胶囊右缘 + 48，纵向对齐胶囊行）；
@@ -141,14 +130,14 @@ export default function IntentRecognitionPanel(props) {
           <div className={'fp-col--c ir-reveal' + on(1)} style={{ width: 285, height: '100%' }}>
             {/* V6.49（用户规格）：输入/输出 4 字加粗加大一号（.p-io-key）；
                 箭头下方文字距箭头 0.1rem（marginTop 4→1.6） */}
-            <div className="p-io-title" style={{ position: 'static' }}><span className="p-io-key">输入</span>：用户投诉文本</div>
+            <div className="p-io-title" style={{ position: 'static' }}><span className="p-io-key">{T('ir.inputKey')}</span>{isEn() ? ': ' : '：'}{T('ir.inputBody')}</div>
             <svg width="285" height="16" viewBox="0 0 285 16" fill="none" style={{ display: 'block', marginTop: 2 }}>
               <path d="M0 8 H276" stroke="#715AFB" strokeWidth="2" strokeLinecap="round" />
               <path d="M270 3 L276 8 L270 13" stroke="#715AFB" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
             </svg>
             <ul className="p-io-list" style={{ position: 'static', marginTop: 1.6, width: 272 }}>
               {items.map((t) => (
-                <li key={t}>{t}</li>
+                <li key={t}>{T(t)}</li>
               ))}
             </ul>
           </div>
@@ -161,14 +150,14 @@ export default function IntentRecognitionPanel(props) {
             两行（样式/行距同输入列）；列顶 119→117（两行贴面板底内沿 190.6 ≤ 191），
             title 顶仍约对齐观察胶囊行上沿 */}
         <div className={'fp-col--c ir-reveal' + on(6)} style={{ position: 'absolute', left: 419, top: 117, alignItems: 'flex-start' }}>
-          <div className="p-io-title" style={{ position: 'static' }}><span className="p-io-key">输出</span>：投诉现象和投诉意图</div>
+          <div className="p-io-title" style={{ position: 'static' }}><span className="p-io-key">{T('ir.outputKey')}</span>{isEn() ? ': ' : '：'}{T('ir.outputBody')}</div>
           <svg width="347" height="16" viewBox="0 0 347 16" fill="none" style={{ display: 'block', marginTop: 2, marginLeft: -31 }}>
             <path d="M0 8 H338" stroke="#09AA71" strokeWidth="2" strokeLinecap="round" />
             <path d="M332 3 L338 8 L332 13" stroke="#09AA71" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
           </svg>
           <ul className="p-io-list" style={{ position: 'static', marginTop: 1.6, width: 308 }}>
-            <li>{CASE_OUTPUT[ck]}</li>
-            <li>产品编号：{PRODUCT_NO}</li>
+            <li>{T(CASE_OUTPUT[ck])}</li>
+            <li>{T('ir.productPrefix')}{PRODUCT_NO}</li>
           </ul>
         </div>
       </div>

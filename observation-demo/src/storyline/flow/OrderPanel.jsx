@@ -8,6 +8,7 @@ import { ORDERS, orderVisible } from '../roles';
 import { CASES } from '../cases';
 import WorkOrderDetailPanel from '../../components/panels/WorkOrderDetailPanel.jsx';
 import { CASE_INPUT } from '../../components/panels/IntentRecognitionPanel.jsx';
+import { T } from '../../i18n';
 import './flow.css';
 
 // 受理时间行（设计烤入文案：日期｜用时N分钟）
@@ -28,8 +29,8 @@ const ICONS = { c1: '/icons/ic_ebg_hospital.svg', c2: '/icons/ic_ebg_hospital.sv
 // V6.44（用户规格）：按《故事线工单详情》补全标题/产品编码/投诉时间（全文年月日格式；
 // c2 标题取文档末条，c1 标题按同号工单前缀+案例客户名归纳）
 const ORDER_TITLES = {
-  c1: '【本地:广州分公司-传输专线-普通-业务全阻-智能CSP派发】某医院',
-  c2: '【本地:广州分公司-传输专线-普通-非业务全阻-智能CSP派发】某科技公司',
+  c1: 'ot.c1',
+  c2: 'ot.c2',
 };
 const orderDetailData = (k) => {
   const [phen] = CASE_INPUT[k === 'c1' ? 'c1' : 'c2'];
@@ -40,11 +41,11 @@ const orderDetailData = (k) => {
   const AREA = { c1: ['广州市', '云溪区'], c2: ['广州市', '松岚区'] };
   return {
     title: ORDER_TITLES[k],
-    desc: phen.replace('投诉现象：', ''),
+    desc: T(phen).replace(T('ir.symptomPrefix'), ''),
     area: [
-      { label: '归属地市', value: AREA[k][0] },
-      { label: '归属区县', value: AREA[k][1] },
-      { label: '产品编号', value: '30122075634' },
+      { label: 'om.city', value: AREA[k][0] },
+      { label: 'om.district', value: AREA[k][1] },
+      { label: 'om.product', value: '30122075634' },
     ],
   };
 };
@@ -75,18 +76,18 @@ function OrderCard({ k, pub, bc }) {
       <div className="fl-order__no">{c.orderNo}</div>
       <div className="fl-order__row">
         <img src={ICONS[k]} alt="" draggable={false} />
-        <span className="fl-order__cust" title={c.customer}>{c.customer}</span>
-        <span className="fl-order__pill" style={{ background: pill.bg, color: pill.fg }}>{pill.text}</span>
+        <span className="fl-order__cust" title={T(c.customer)}>{T(c.customer)}</span>
+        <span className="fl-order__pill" style={{ background: pill.bg, color: pill.fg }}>{T(pill.text)}</span>
       </div>
       <div className="fl-order__last">
-        <span className="fl-order__time">{TIMES[k]}</span>
+        <span className="fl-order__time">{T(TIMES[k])}</span>
         {/* V6.63（用户规格）：详情按钮——弹窗呈现（无角标图标）；
             点击开/再点关（stopPropagation 不触发整卡切案） */}
         <span
           className={'fl-order__detail' + (expanded ? ' fl-order__detail--open' : '')}
           onClick={(e) => { e.stopPropagation(); pub.api.setOrderDetail(expanded ? null : k); }}
         >
-          详情
+          {T('om.details')}
         </span>
       </div>
     </div>
@@ -115,18 +116,16 @@ const Chevron = () => (
 // 政府/军队机构名（s3/s4 客户）打码；普通单位名称按口径保留明文；机房端口名为演示
 // 核心业务数据保留
 // V6.60（用户规格）：s3/s4 替换为 某储能科技公司（惠州/广州）白名单专线工单（用户提供
-// 文案；源文未提供工单号——按既有格式以投诉时间派生（原真实号已随 V6.79 虚拟化移除），
-// 源文「归属区县 020」保持原样；desc=问题描述/报障描述，用时沿用 5 分钟）
+// 文案；源文未提供工单号——按既有格式以投诉时间派生（原真实号已随脱敏移除）
+// /104930，源文「归属区县 020」保持原样；desc=问题描述/报障描述，用时沿用 5 分钟）
 // V6.61（用户规格）：s1 某银行 受理时间改 10-20 01:55:05、s2 某系统集成公司 改 10-18
 // （时钟不变）——工单号内嵌日期随之（20261020/20261018）；首枚与案例工单同号关系废止
 // V6.62（用户规格）：列表严格按时间倒序——10-12 同日两单对调（10:49:30 广州 先于 09:47:29 惠州）
-// V6.67（用户规格）：末枚（惠州白名单）换为 某银行深圳分行工单（源单号已随 V6.79
-// 虚拟化，2026-10-09 14:54:56——倒序列表仍居末位；源文未提供用时——沿用 5 分钟）
+// V6.67（用户规格）：末枚（惠州白名单）换为 某银行深圳分行工单（源单号已随脱敏移除，2026-10-09 14:54:56——倒序列表仍居末位；源文未提供用时——沿用 5 分钟）
 // V6.68（用户规格）：静态工单耗时重排——取值 30–180 分钟、均值≈2.56 小时
 // V6.69（用户规格）：某银行单改 35 分钟后其余三张重排——175/145/140＝460，
 // 均值 153.3 分 ≈ 2.56h、最大 175 分（2.92h）≤ 3h；c1/c2 故事线用时不改
-// V6.73（用户规格）：新增 某集团公司 数据(互联网)专线工单（源单号已随 V6.79 虚拟化，
-// 原 10-28 06:25:41）；投诉时间改 10-22 置某银行单前（倒序仍成立），
+// V6.73（用户规格）：新增 某集团公司 数据(互联网)专线工单——源单号已随脱敏移除（原 10-28 06:25:41）；投诉时间改 10-22 置某银行单前（倒序仍成立），
 // 工单号内嵌日期随之改 20261022（V6.61 口径）；用时 154 分钟——非某银行四张
 // 175/145/140/154＝614，均值 153.5 分 ≈ 2.56h 仍达标
 // V6.74（用户规格）：客户单位名虚拟化——某医院/某科技公司/某银行/某系统集成公司/
@@ -135,24 +134,24 @@ const Chevron = () => (
 // city/district 虚拟区名、productNo 每单随机、描述内地址/专线号 同步虚拟
 const STATIC_ORDERS = [
   { id: 's5', no: 'WO-20261022-1968', customer: '某集团公司', time: '10-22 06:25:41｜用时154分钟',
-    title: '【本地:广州分公司-数据(互联网)专线-普通-非业务全阻-智能CSP派发】某集团公司', productNo: '30122046287',
-    desc: '客户反应公司专线突然无法使用，要求我司处理，请跟进，谢谢。',
+    title: 'ot.s5', productNo: '30122046287',
+    desc: 'od.s5',
     city: '广州市', district: '翠湖区' },
   { id: 's1', no: 'WO-20261020-3417', customer: '某银行', time: '10-20 01:55:05｜用时35分钟',
-    title: '【本地:广州分公司-传输专线-普通-业务全阻-智能CSP派发】某银行', productNo: '30122084127',
-    desc: '（夜间服务）客户来电表示某银行的专线中断，地址：广州市麓川区。要求尽快处理。',
+    title: 'ot.s1', productNo: '30122075634',
+    desc: 'od.s1',
     city: '广州市', district: '麓川区' },
   { id: 's2', no: 'WO-20261018-9065', customer: '某系统集成公司', time: '10-18 01:55:39｜用时175分钟',
-    title: '【本地:广州分公司-传输专线-普通-业务全阻-智能CSP派发】某系统集成公司', productNo: '30122037695',
-    desc: '用户来电反映公司两地专线使用不到，要求我司尽快安排人员前往处理，请加急，谢谢。',
+    title: 'ot.s2', productNo: '30122037695',
+    desc: 'od.s2',
     city: '广州市', district: '榕江区' },
   { id: 's4', no: 'WO-20261012-4827', customer: '某储能科技公司', time: '10-12 10:49:30｜用时145分钟',
-    title: '【白名单专线】【本地.广州分公司-传输专线-普通-业务全阻-智能CSP派发】某储能科技公司', productNo: '30122059831',
-    desc: '用户反映30122059831，30122061127专线中断，要求报障回复，要求处理进度也外呼通知客户经理。故障详细地址：广州市白泽区。',
+    title: 'ot.s4', productNo: '30122059831',
+    desc: 'od.s4',
     city: '广州市', district: '白泽区' },
   { id: 's3', no: 'WO-20261009-7531', customer: '某银行深圳分行', time: '10-09 14:54:56｜用时140分钟',
-    title: '【本地.深圳分公司-传输专线-普通-非业务全阻-智能CSP派发】某银行深圳分行', productNo: '20221308465',
-    desc: '客户来电报公司网络故障，要求现在安排人上门处理，请协助跟进，谢谢。',
+    title: 'ot.s3', productNo: '20221308465',
+    desc: 'od.s3',
     city: '深圳市', district: '鹏南区' },
 ];
 
@@ -165,9 +164,9 @@ const staticDetailData = (o) => ({
   desc: o.desc,
   // V6.66：全表单化——标题/描述改信息行，信息行去重（集团名称/时间在表单）
   area: [
-    { label: '归属地市', value: o.city },
-    { label: '归属区县', value: o.district },
-    { label: '产品编号', value: o.productNo },
+    { label: 'om.city', value: o.city },
+    { label: 'om.district', value: o.district },
+    { label: 'om.product', value: o.productNo },
   ],
 });
 
@@ -181,13 +180,13 @@ function modalData(id, pub) {
     const [date] = time.split('｜');
     return {
       rows: [
-        { label: '投诉单号', value: no },
-        { label: '工单标题', value: clean(d.title) },
-        { label: '投诉信息', value: d.desc },
-        { label: '集团名称', value: customer },
-        { label: '投诉时间', value: '2026-' + date },
+        { label: 'om.no', value: no },
+        { label: 'om.titleLbl', value: clean(T(d.title)) },
+        { label: 'om.info', value: d.desc },
+        { label: 'om.customer', value: customer },
+        { label: 'om.time', value: '2026-' + date },
         ...d.area,
-        { label: '状态', value: status },
+        { label: 'om.status', value: status },
       ],
     };
   };
@@ -209,8 +208,8 @@ function WorkOrderModal({ data, onClose }) {
       <div className="wom glass-panel" onClick={(e) => e.stopPropagation()}>
         <div className="fp-head">
           <div className="p-title-bar" />
-          <div className="p-title-text">工单详情</div>
-          <button className="wom-close" onClick={onClose} title="关闭" aria-label="关闭">
+          <div className="p-title-text">{T('om.title')}</div>
+          <button className="wom-close" onClick={onClose} title={T('om.close')} aria-label={T('om.close')}>
             <svg width="0.625rem" height="0.625rem" viewBox="0 0 10 10" aria-hidden="true">
               <path d="M1.5 1.5 L8.5 8.5 M8.5 1.5 L1.5 8.5" fill="none" stroke="rgba(201,201,201,1)" strokeWidth="1.4" strokeLinecap="round" />
             </svg>
@@ -230,18 +229,18 @@ function StaticOrderCard({ o, pub, expanded }) {
       <div className="fl-order__no">{o.no}</div>
       <div className="fl-order__row">
         <img src="/icons/ic_ebg_hospital.svg" alt="" draggable={false} />
-        <span className="fl-order__cust" title={o.customer}>{o.customer}</span>
-        <span className="fl-order__pill" style={{ background: 'rgba(9,170,113,0.15)', color: 'rgba(54,193,141,1)' }}>已完成</span>
+        <span className="fl-order__cust" title={T(o.customer)}>{T(o.customer)}</span>
+        <span className="fl-order__pill" style={{ background: 'rgba(9,170,113,0.15)', color: 'rgba(54,193,141,1)' }}>{T('lp.done')}</span>
       </div>
       <div className="fl-order__last">
-        <span className="fl-order__time">{o.time}</span>
+        <span className="fl-order__time">{T(o.time)}</span>
         {/* V6.63（用户规格）：详情按钮——弹窗呈现（无角标图标）；
             与真卡共用 orderDetail 单开互斥；卡体仍不可点击（不选中/不切案） */}
         <span
           className={'fl-order__detail' + (expanded ? ' fl-order__detail--open' : '')}
           onClick={(e) => { e.stopPropagation(); pub.api.setOrderDetail(expanded ? null : o.id); }}
         >
-          详情
+          {T('om.details')}
         </span>
       </div>
     </div>
@@ -256,7 +255,7 @@ export default function OrderPanel({ pub }) {
           本组件重建（12×48 @ 304,492，右圆角贴面板右缘；图标参考日志面板把手箭头样式，
           左指 = 收起方向）；点击收起（收起态由 PanelHandles 左缘把手展开） */}
       <button className="fl-ordertab" onClick={pub.api.toggleOrders}
-        title="收起工单列表" aria-label="收起工单列表">
+        title={T('order.collapse')} aria-label={T('order.collapse')}>
         <Chevron />
       </button>
       <div className="fl-orders" style={{ left: ORDERS.c1.box.x, top: ORDERS.c1.box.y }}>

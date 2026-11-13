@@ -1,5 +1,6 @@
 import React from 'react'
 import useStageClock from './useStageClock.js'
+import { T, isEn } from '../../i18n'
 
 /* SearchAgentPanel — 检索智能体面板
    V6.13（用户规格）：布局样式同步 react-panels 源——search-panel__* 流式版式：
@@ -11,21 +12,22 @@ import useStageClock from './useStageClock.js'
    未选中 = 粤东/粤西 plain 样式；
    V3.15 selected 属性保留（WAIMO 检索 → ['zx']、专线检索 → ['yd','yx']） */
 const OPTIONS = [
-  { key: 'yd', label: '粤东SPN网络智能' },
-  { key: 'yx', label: '粤西SPN网络智能' },
-  { key: 'zx', label: '传输投诉处理智能体' },
+  { key: 'yd', label: 'agent.yd' },
+  { key: 'yx', label: 'agent.yx' },
+  { key: 'zx', label: 'agent.zx' },
 ]
 
 export default function SearchAgentPanel({ selected = ['zx'], ...clock }) {
   const stage = useStageClock(clock, 2)
+  // V6.82（用户规格）：EN 副题折两行（.search-panel__subtitle i18n.css）——面板高 12.125→12.75rem
   return (
-    <div className="glass-panel search-panel" style={{ width: '14.75rem', height: '12.125rem' }}>
+      <div className="glass-panel search-panel" style={{ width: '14.75rem', height: isEn() ? '12.75rem' : '12.125rem' }}>
       {/* 标题区（青色系） */}
       <div className="search-panel__head">
         <span className="search-panel__bar" />
-        <span className="search-panel__title title-text--gradient">检索智能体</span>
+        <span className="search-panel__title title-text--gradient">{T('se.title')}</span>
       </div>
-      <div className="search-panel__subtitle">根据名称、描述和技能检索AgentCard</div>
+      <div className="search-panel__subtitle">{T('se.subtitle')}</div>
 
       {/* 单选按钮组（react-panels 版式：组底铺色 + 选项纵向堆叠；
           前半全 plain → 后半选中项静态 glass，无过渡动画；
@@ -39,7 +41,7 @@ export default function SearchAgentPanel({ selected = ['zx'], ...clock }) {
               className={'search-panel__option ' + (sel ? 'radio-option--glass' : 'radio-option--plain')}
               style={{ color: sel ? '#FFFFFF' : undefined }}
             >
-              {o.label}
+              {T(o.label)}
             </div>
           )
         })}

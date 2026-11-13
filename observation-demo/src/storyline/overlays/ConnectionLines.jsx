@@ -14,7 +14,8 @@ import React from 'react';
 import { FLOWS } from '../paths';
 import { LINES } from '../roles-data';
 import { remapPathEnds } from '../roles';
-import { cardRect } from '../flow/geometry';
+import { cardRect, lcBox } from '../flow/geometry';
+import { getLang } from '../../i18n';
 
 const MARKER = 'st-chev';
 
@@ -27,14 +28,17 @@ const SEARCH_KEYS = { 'reg-waimo-search': true, 'reg-zx-search': true };
 
 // ---- V6.3 拓扑几何（见文件头）----
 const REGION_CY = 556;   // (230 + 882) / 2——步骤区域容器下边沿..日志面板上边沿
-const LC_RIGHT = 481;    // 流程中心盒右缘（401..481）
+// 流程中心盒右缘：卡宽随译名增长（geometry.lcBox，中心恒 441——zh 401..481 与原定宽一致）
+const LC_RIGHT = () => 441 + lcBox().w / 2;
 const REG_RIGHT = 513;   // 能开平台卡右缘（369..513）
 const SEARCH_Y = 340.5;  // 检索线水平段（平台卡带内）
 
-let _geoCase = null;
+let _geoKey = null;
 export function applyCaseGeometry(caseId) {
-  if (_geoCase === caseId) return;
-  _geoCase = caseId;
+  // 记忆化键含语言：卡宽随译名变化（geometry.cardW 按语言度量），切换语言须重算端点
+  const key = caseId + ':' + getLang();
+  if (_geoKey === key) return;
+  _geoKey = key;
   const R = { WAIMO: cardRect('WAIMO', caseId), ZX: cardRect('ZX', caseId), YD: cardRect('YD', caseId), YX: cardRect('YX', caseId) };
   const f1 = (v) => Math.round(v * 10) / 10;
   const el = (r) => f1(r.x), er = (r) => f1(r.x + r.w), ec = (r) => f1(r.x + r.w / 2);
@@ -42,9 +46,10 @@ export function applyCaseGeometry(caseId) {
   const { WAIMO: W, ZX: Z, YD, YX } = R;
   const y1 = REGION_CY - 22, y2 = REGION_CY + 22;   // lc / waimo-zx 对称组 534/578
   const n1 = REGION_CY - 15, n2 = REGION_CY + 15;   // neg 对称组 541/571
+  const lcR = LC_RIGHT();                            // 流程中心右缘（随译名宽）
   const D = {
-    'lc-waimo-fetch': { d: 'M481 ' + y1 + 'H' + el(W) },
-    'lc-waimo-report': { d: 'M' + el(W) + ' ' + y2 + 'H481' },
+    'lc-waimo-fetch': { d: 'M' + lcR + ' ' + y1 + 'H' + el(W) },
+    'lc-waimo-report': { d: 'M' + el(W) + ' ' + y2 + 'H' + lcR },
     'reg-waimo-search': { d: 'M' + REG_RIGHT + ' ' + SEARCH_Y + 'H' + (ec(W) - 8.5) + 'Q' + ec(W) + ' ' + SEARCH_Y + ' ' + ec(W) + ' 349V' + et(W) },
     'reg-zx-search': { d: 'M' + REG_RIGHT + ' ' + SEARCH_Y + 'H' + (ec(Z) - 8.5) + 'Q' + ec(Z) + ' ' + SEARCH_Y + ' ' + ec(Z) + ' 349V' + et(Z) },
     'waimo-zx-task': { d: 'M' + er(W) + ' ' + y1 + 'H' + el(Z) },
@@ -75,8 +80,8 @@ export function applyCaseGeometry(caseId) {
   // 检索竖线标签在左侧（右缘距线 4）、y 居竖段中部
   const pw = (k) => (LINES[k] ? LINES[k].pillBox.w : 40);
   const P = {
-    'lc-waimo-fetch': { x: f1((LC_RIGHT + el(W)) / 2 - pw('lc-waimo-fetch') / 2), y: y1 - 28 },
-    'lc-waimo-report': { x: f1((LC_RIGHT + el(W)) / 2 - pw('lc-waimo-report') / 2), y: y2 - 28 },
+    'lc-waimo-fetch': { x: f1((lcR + el(W)) / 2 - pw('lc-waimo-fetch') / 2), y: y1 - 28 },
+    'lc-waimo-report': { x: f1((lcR + el(W)) / 2 - pw('lc-waimo-report') / 2), y: y2 - 28 },
     'waimo-zx-task': { x: f1((er(W) + el(Z)) / 2 - pw('waimo-zx-task') / 2), y: y1 - 28 },
     'waimo-zx-notif': { x: f1((er(W) + el(Z)) / 2 - pw('waimo-zx-notif') / 2), y: y2 - 28 },
     'zx-yd-task': { x: f1((ec(Z) + 9.5 + el(YD)) / 2 - pw('zx-yd-task') / 2), y: cy(YD) - 28 },

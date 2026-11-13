@@ -12,7 +12,8 @@
 import React, { useEffect, useState } from 'react';
 import { CARDS, AGENTS, satCssStyle } from '../roles';
 import { CASES, TIME_SCALE, KEY_DESCS } from '../cases';
-import { CARD_META, MINI_TITLES, CARD_H_V62, cardW } from './geometry';
+import { CARD_META, MINI_TITLES, CARD_H_V62, cardW, pillLines } from './geometry';
+import { T } from '../../i18n';
 import './flow.css';
 
 // 卡静态内容（图标/标题/技能胶囊/编排中心/迷你标题）与定高常量移 flow/geometry.js
@@ -134,7 +135,7 @@ function NodeCard({ k, world, pub }) {
       <div key={k + '-' + i} className="fl-mini">
         <MiniDot s={s} num={i + 1} />
         <div className={'fl-mini__title' + (s === 'active' ? ' fl-mini__title--active' : '') + (s === 'active' ? ' st-mini-active' : '')}>
-          {MINI_TITLES[k][i]}
+          {T(MINI_TITLES[k][i])}
         </div>
       </div>
     );
@@ -146,10 +147,10 @@ function NodeCard({ k, world, pub }) {
     <div
       className={'fl-desc' + (KEY_DESCS.has(desc.text) ? ' fl-desc--key' : '') + (desc.phase === 'out' ? ' fl-desc-out' : '')}
       style={{ transitionDuration: desc.fadeMs + 'ms' }}
-      title={desc.text}
-      data-text={KEY_DESCS.has(desc.text) ? desc.text : undefined}
+      title={T(desc.text)}
+      data-text={KEY_DESCS.has(desc.text) ? T(desc.text) : undefined}
     >
-      {desc.text}
+      {T(desc.text)}
     </div>
   ) : null;
   return (
@@ -157,16 +158,27 @@ function NodeCard({ k, world, pub }) {
       display: 'flex', justifyContent: 'center', pointerEvents: 'none' }}>
       <div className={'fl-card' + (running ? ' fl-card--running' : '')}
         style={{ height: '100%', width: cardW(k, pub.caseId), ...satCssStyle(pub, box, anchor) }}>
-        {badge ? <div className="fl-badge" style={{ background: badge.bg }}>{badge.text}</div> : null}
+        {badge ? <div className="fl-badge" style={{ background: badge.bg }}>{T(badge.text)}</div> : null}
         <img className="fl-card__icon" src={meta.icon} alt="" draggable={false} />
-        <div className="fl-card__title">{meta.title}</div>
+        <div className="fl-card__title">{T(meta.title)}</div>
         {meta.center ? (
-          <div className="fl-cc"><img src={meta.center.icon} alt="" draggable={false} />{meta.center.text}</div>
+          <div className="fl-cc"><img src={meta.center.icon} alt="" draggable={false} />{T(meta.center.text)}</div>
         ) : null}
         <div className="fl-pills" style={meta.pillGap ? { gap: meta.pillGap } : undefined}>
-          {meta.pills.map(([ic, tx]) => (
-            <div key={tx} className="fl-pill"><img src={'/icons/' + ic + '.svg'} alt="" draggable={false} />{tx}</div>
-          ))}
+          {meta.pills.map(([ic, tx]) => {
+            // V6.80（用户规格）：EN 双词技能标签换行——每词一行纵向堆叠（zh 无空格单行）
+            const lines = pillLines(T(tx));
+            return (
+              <div key={tx} className={'fl-pill' + (lines.length > 1 ? ' fl-pill--wrap' : '')}>
+                <img src={'/icons/' + ic + '.svg'} alt="" draggable={false} />
+                {lines.length > 1 ? (
+                  <span className="fl-pill__lines">
+                    {lines.map((w) => <span key={w} className="fl-pill__line">{w}</span>)}
+                  </span>
+                ) : lines[0]}
+              </div>
+            );
+          })}
         </div>
         {minis.length ? <div className="fl-minis">{minis}</div> : null}
         <div className="fl-desczone">{descNode}</div>

@@ -22,62 +22,43 @@
 
 import { CASE_EVENTS, buildLogs } from './case-data';
 import { panelStageBeats } from './panel-timing';
+import { getLang } from '../i18n';
 
 export const TIME_SCALE = 0.25; // 1x 时：案例一 820s→约205s，案例二 1019s→约255s（V6.72）
 
-// 迷你步骤描述（卡片底部白色文字；V5.6 用户规格：与文档 §1.3/§2.3 原文完全一致——
-// 超宽换行至多两行、卡片高度固定不增高）
-// V5.2：投诉识别子步骤不显示卡底描述（内容已由意图识别详情面板承载）；
-// 定界定位描述 = DJ 四句依次轮换（见下）
+// 迷你步骤描述（卡片底部白色文字）——值为 i18n 占位键（zh.json/en.json d1.*/d2.*）；
+// 投诉识别子步骤：V6.84（用户规格）意图识别面板废止——卡底描述仅展示意图识别输出行
+//（投诉现象和投诉意图：场景，见 D1.sb/D2.sb）；定界定位描述 = DJ 四句依次轮换（见下）
 // c1：跨地市业务中断（故障=粤西光纤中断） / c2：SLA 劣化（故障=粤西光路隐患）
 const D1 = {
-  dd: '通过掌上运维通知并指导广州公司一线运维人员进行投诉工单的故障处置。',
-  bjW: '处置完毕后核查端口告警已消除，客户回访问题已经解决，投诉工单闭环，处理信息回传流程中心。',
-  sj: '根据专线业务的源宿端的接入网元明确接入网元所属的SPN网络智能。',
+  sb: 'd1.sb',
+  dd: 'd1.dd',
+  bjW: 'd1.bjW', // V6.83 修复：原小写 'd1.bjw' 与词典键 d1.bjW 不匹配 → EN/zh 均原样显示键名
+  sj: 'd1.sj',
   bd: null, // 动态编排：弹框呈现，无描述文字（原文档）
-  rw: '提取投诉诊断请求参数，创建投诉诊断任务。',
-  // V6.56（用户规格）：根因总结缩短至两行——原「粤西SPN网络智能端口…」约 41 字，
-  // 传输卡关键描述 14px 加粗约 18 字/行 → 3 行；省「SPN网络智能」（粤西已可辨识），
-  // 故障结论原文逐字保留
-  zg: '跨城故障协同诊断汇总结果：粤西端口收光无光，发光正常，原因是光纤中断。',
-  yx0: '端口收光无光，发光正常，原因是光纤中断。',
-  yd0: '未发现故障。',
-  // V6.4（用户规格）：修复验证详细描述
-  fix: '处置完毕后核查主备路由信号丢失类、端口告警均已消除，核查端口管功率已恢复至正常范围。',
+  rw: 'd1.rw',
+  zg: 'd1.zg',
+  yx0: 'd1.yx0',
+  yd0: 'd1.yd0',
+  fix: 'd1.fix',
 };
 const D2 = {
-  bjW: '客户回访确认问题已经解决，投诉工单闭环，处理信息回传流程中心。',
-  sj: '根据专线业务的源宿端的接入网元，明确接入网元所属的SPN网络智能。',
+  sb: 'd2.sb',
+  bjW: 'd2.bjW', // V6.83 修复：同 D1.bjW（键大小写）
+  sj: 'd2.sj',
   bd: null,
-  rw: '提取投诉诊断请求参数，创建投诉诊断任务。',
-  // V6.73..76（用户规格）：根因总结描述改版迭代（原「跨城故障协同诊断汇总结果：…」废止；
-  // c1 不变）；V6.77/78（用户规格·定稿）：全角冒号 + 句尾句号——实测全文 ~758px 超两行
-  // 常规容量，配合 flow.css V6.78 关键描述负边距（区域 388px）两行呈现
-  zg: '根因总结：粤西P45054的1-TPN2EX10S-3端口收光弱光，约0.226km存在纤损。有逃生路径，推荐执行隧道调优。',
-  xf: '周期查询业务的SLA信息，指标已经恢复正常。',
-  hf: '专线业务已经完成抢通修复，经过验证业务的SLA已经恢复正常。',
-  yx0: '诊断结果详情：端口收光弱光，发光正常，原因是光纤整体损耗大。',
-  // V6.55（用户规格）：精简至 26 字（原 31 字 3 行）——粤西卡描述区 194px、14px 加粗
-  // 每行 13 字，26 字 = 13+13 两行满行呈现；三项指标与原文逐字一致
-  //（流量带宽、时延越限和丢包越限），仅省「列表/受影响的」
-  yx1: '将流量带宽、时延越限和丢包越限的隧道调优到新的路径。',
-  yd0: '诊断结果详情：未发现故障',
+  rw: 'd2.rw',
+  zg: 'd2.zg',
+  xf: 'd2.xf',
+  hf: 'd2.hf',
+  yx0: 'd2.yx0',
+  yx1: 'd2.yx1',
+  yd0: 'd2.yd0',
 };
 
-// 定界定位卡底描述 3 句（mini1 窗口内依次出现、逐句替换，各 12s；无详情面板）——
-// V6.4（用户规格）：第 2 句统一「网络情况：主路由中断，存在信号丢失类告警。备路由中断，
-// 存在端口类告警。」；V6.10（用户规格）：「备用路由情况」句删除不展示（两案一致）；
-// V6.69（用户规格）：「备路由中断，存在端口类告警」改「备路由存在端口类告警」（两案一致）
-const DJ1 = [
-  '业务状态：核查专线业务状态正常，状态为使用中。',
-  '网络情况：主路由中断，存在信号丢失类告警。备路由存在端口类告警。',
-  '定界结论：传输大网线路问题。',
-];
-const DJ2 = [
-  '业务状态：核查专线业务状态正常，状态为使用中。',
-  '网络情况：主路由中断，存在信号丢失类告警。备路由存在端口类告警。',
-  '定界结论：传输大网线路问题。',
-];
+// 定界定位卡底描述 3 句（mini1 窗口内依次出现、逐句替换，各 12s；无详情面板）——i18n 键 dj.*
+const DJ1 = ['dj.status', 'dj.network', 'dj.conclusion'];
+const DJ2 = ['dj.status', 'dj.network', 'dj.conclusion'];
 
 // V6.48（用户规格）：关键子步骤结果描述集——WAIMO 定界定位·定界结论（DJ 第 3 句）、
 // 传输 根因总结（zg）、两案修复验证结果（c1 WAIMO 核查告警消除 fix / c2 传输 xf）。
@@ -110,10 +91,10 @@ const c1 = {
   id: 'c1',
   orderNo: 'WO-20261024-7316',
   customer: '某医院',
-  desc: '客户表示广州至深圳的专线没法使用，但不能确定是哪个地方的问题，要求师傅尽快检测处理，没承诺，请跟进，谢谢。',
+  desc: 'case.desc.c1',
   // 协商补充 cvlan=1208 后的工单卡信息（t=348 Accept 重发任务时更新）
   orderDescUpdated: 'P10001-A01-1-1-ETH (cvlan=1208)',
-  steps: ['投诉受理', '投诉识别', '定界定位', '根因定位', '问题处置', '修复验证', '投诉报结'],
+  steps: ['step.1', 'step.2', 'step.3', 'step.4', 'step.5', 'step.6', 'step.7'],
   // V5.56（用户规格）：检索智能体属于定界定位步骤——步骤2 延至 Task-T 弹窗出现（144），
   // 步骤3（根因定位）自 144 起回放（原 120..144 检索驻留段划入定界定位；标称分钟不变）
   durations: [24, 60, 96, 496, 64, 24, 56], // 合计 820s（边界 24/84/180/676/740/764/820；V6.30 编排 24s 顺延 -12）
@@ -121,7 +102,7 @@ const c1 = {
   d: D1,
   // 槽位使用集（V4：未列出的槽位运行时不渲染、完成态不点亮；WAIMO 4/专线 4/粤东 1/粤西 1）
   usedMini: { WAIMO: [0, 1, 2, 3], ZX: [0, 1, 2, 3], YD: [0], YX: [0] },
-  logs: buildLogs(CASE_EVENTS.c1),
+  logs: buildLogs(CASE_EVENTS.c1, 'c1'),
   // A2A-T 消息文案（回放时展示在连线下方，宽度不超过连线长度、超出以 …… 截断，见 ConnectionFlow）：
   // 按「连线:标签」对应（无标签键 = 该连线默认消息）；
   // V5.48（用户规格）：连线文字精简为步骤概要（4~10 字，如 诊断任务/诊断结果——
@@ -130,13 +111,13 @@ const c1 = {
   // 与连线胶囊标签（抓取工单/工单报结）重复，只保留胶囊标签；
   // 注册中心检索线不加消息——检索结果已随胶囊标注；协商请求/回复由协商详细面板承载
   flowMsgs: {
-    'waimo-zx-task': '诊断任务',
-    'zx-yx-task': '诊断任务',
-    'zx-yx-task:Task-T请求': '补充诊断任务',
-    'zx-yd-task': '诊断任务',
-    'zx-yx-neg:Task-T响应': '诊断结果',
-    'zx-yd-neg:Task-T响应': '诊断结果',
-    'waimo-zx-notif:Task-T响应': '诊断结果汇总',
+    'waimo-zx-task': 'msg.diagTask',
+    'zx-yx-task': 'msg.diagTask',
+    'zx-yx-task:Task-T请求': 'msg.supplement',
+    'zx-yd-task': 'msg.diagTask',
+    'zx-yx-neg:Task-T响应': 'msg.diagResult',
+    'zx-yd-neg:Task-T响应': 'msg.diagResult',
+    'waimo-zx-notif:Task-T响应': 'msg.diagSummary',
   },
   events: [
     // V6.25（用户规格）：展示节奏放宽——连线消息/描述窗口 12→24 业务秒（1x 观众 6s），
@@ -147,10 +128,10 @@ const c1 = {
     { t: 0, type: 'step', i: 0, st: 'active' },
     { t: 24, type: 'flow', line: 'lc-waimo-fetch', on: false },
     { t: 24, type: 'step', i: 0, st: 'done' }, { t: 24, type: 'step', i: 1, st: 'active' },
-    // 投诉识别子步骤：无卡底描述（V5.4 用户规格——内容已由意图识别详情面板承载）
-    { t: 24, type: 'mini', k: 'WAIMO', i: 0, st: 'active' },
-    // 识别步骤窗口 24..84——意图识别面板 5 段渐入（输入整体→Reasoning→Action→Observation→输出，
-    // 顺时针依次出现、常驻累计，各 12s），全部展示完成后才进入定界定位
+    // 投诉识别子步骤：V6.84（用户规格）意图识别面板废止——卡底描述仅展示输出行
+    //（投诉现象和投诉意图：场景，窗口 24..84 全程驻留；84 起被定界定位首句替换）
+    { t: 24, type: 'mini', k: 'WAIMO', i: 0, st: 'active', desc: D1.sb },
+    // 识别步骤窗口 24..84——（原意图识别面板 5 段渐入已废止；单步节拍见 panel-timing）
     { t: 84, type: 'mini', k: 'WAIMO', i: 0, st: 'done' },
     { t: 84, type: 'step', i: 1, st: 'done' }, { t: 84, type: 'step', i: 2, st: 'active' },
     // 定界定位无详情面板——卡底描述区 3 句依次出现（逐句替换，各 24s，V6.25），完成后检索注册中心
@@ -164,7 +145,7 @@ const c1 = {
     // 与 Task-T 面板同拍结束；步骤3（根因定位）自 Task-T 弹窗出现开始；
     // 事件须按 t 升序（foldWorld 以 ev.t > t 提前 break）——180 块在检索窗口（156..174）之后
     { t: 156, type: 'desc', k: 'WAIMO' },
-    { t: 156, type: 'flow', line: 'reg-waimo-search', on: true, result: '命中：传输投诉处理智能体' },
+    { t: 156, type: 'flow', line: 'reg-waimo-search', on: true, result: 'hit.zx' },
     { t: 162, type: 'log', i: 0 },
     { t: 174, type: 'flow', line: 'reg-waimo-search', on: false },
     { t: 180, type: 'mini', k: 'WAIMO', i: 1, st: 'done' },
@@ -182,7 +163,7 @@ const c1 = {
     { t: 396, type: 'mini', k: 'ZX', i: 0, st: 'done' },
     // 数据关联完成 → 检索注册中心命中粤东/粤西（连线 396..414，检索面板驻留至 420）；
     // 面板在场期间无激活子步骤——卡底描述自然为空（原 V5.10 面板在场遮挡描述事件废止）
-    { t: 396, type: 'flow', line: 'reg-zx-search', on: true, result: '命中：粤东、粤西SPN网络智能' },
+    { t: 396, type: 'flow', line: 'reg-zx-search', on: true, result: 'hit.ydyx' },
     { t: 402, type: 'log', i: 2 },
     { t: 414, type: 'flow', line: 'reg-zx-search', on: false },
     // 检索命中 → 粤东/粤西登场 → 动态编排 420..444（V6.30 缩短：面板 3 段 × 8s）
@@ -269,8 +250,8 @@ const c2 = {
   id: 'c2',
   orderNo: 'WO-20261028-5829',
   customer: '某科技公司',
-  desc: '客户表示专线使用感知差，网络间歇性卡顿、丢包，业务时断时续，影响业务使用，要求排查处理。',
-  steps: ['投诉受理', '投诉识别', '定界定位', '根因定位', '问题处置', '修复验证', '投诉报结'],
+  desc: 'case.desc.c2',
+  steps: ['step.1', 'step.2', 'step.3', 'step.4', 'step.5', 'step.6', 'step.7'],
   // V6.4（1020 文档 3.2.3 修订）：流程新增 Negotiation-T 协商（480..552，V6.25 面板两段
   // 各 36——粤西 A端端口名称不含子接口标识（-ETH.409 删除）→ 粤西发起协商，工作台补
   // cvlan=409 后重发任务）
@@ -293,25 +274,25 @@ const c2 = {
   // V6.24（用户规格）：工单2 调度处置不展示弹窗（dispatchWindowOf 置零即 DispatchPanel
   // 不挂载）——仅 mini2 loading 快闪；c1 未设即默认挂载（掌上运维派单面板）
   dispatchPanel: false,
-  logs: buildLogs(CASE_EVENTS.c2),
+  logs: buildLogs(CASE_EVENTS.c2, 'c2'),
   flowMsgs: {
-    'waimo-zx-task': '诊断任务',
-    'zx-yd-task': '诊断任务',
-    'zx-yx-task': '诊断任务',
-    'zx-yx-task:Task-T请求': '补充诊断任务',
+    'waimo-zx-task': 'msg.diagTask',
+    'zx-yd-task': 'msg.diagTask',
+    'zx-yx-task': 'msg.diagTask',
+    'zx-yx-task:Task-T请求': 'msg.supplement',
     // Authorization-T 两段（V6.5 用户规格：请求经 zx-yx-task 线——传输→粤西 正向；
     // 响应经 zx-yx-neg 回程线；标签均为 Authorization-T）
-    'zx-yx-task:Authorization-T': '新增动网操作授权',
-    'zx-yx-neg:Authorization-T': '动网操作授权成功',
-    'zx-yx-neg:Task-T响应': '诊断结果',
-    'zx-yx-neg:Notification-T·上报': '抢通方案上报',
-    'zx-yx-neg:Notification-T·成功': '抢通执行成功',
+    'zx-yx-task:Authorization-T': 'msg.authNew',
+    'zx-yx-neg:Authorization-T': 'msg.authOk',
+    'zx-yx-neg:Task-T响应': 'msg.diagResult',
+    'zx-yx-neg:Notification-T·上报': 'msg.planReport',
+    'zx-yx-neg:Notification-T·成功': 'msg.execOk',
     // V6.22（用户规格）：传输→WAIMO 转发段（waimo-zx-notif 线，同标签变体）
-    'waimo-zx-notif:Notification-T·上报': '抢通方案上报',
-    'waimo-zx-notif:Notification-T·成功': '抢通结果上报',
-    'zx-yd-neg:Task-T响应': '诊断结果',
-    'waimo-zx-notif:Task-T响应': '诊断结果汇总',
-    'waimo-zx-notif:Notification-T': '业务抢通完成',
+    'waimo-zx-notif:Notification-T·上报': 'msg.planReport',
+    'waimo-zx-notif:Notification-T·成功': 'msg.resultReport',
+    'zx-yd-neg:Task-T响应': 'msg.diagResult',
+    'waimo-zx-notif:Task-T响应': 'msg.diagSummary',
+    'waimo-zx-notif:Notification-T': 'msg.restoreDone',
   },
   events: [
     // V6.25（用户规格）：展示节奏放宽——连线消息/描述窗口 12→24 业务秒，Negotiation-T
@@ -323,9 +304,10 @@ const c2 = {
     { t: 0, type: 'step', i: 0, st: 'active' },
     { t: 24, type: 'flow', line: 'lc-waimo-fetch', on: false },
     { t: 24, type: 'step', i: 0, st: 'done' }, { t: 24, type: 'step', i: 1, st: 'active' },
-    // 投诉识别子步骤：无卡底描述（V5.4 用户规格——内容已由意图识别详情面板承载）
-    { t: 24, type: 'mini', k: 'WAIMO', i: 0, st: 'active' },
-    // 识别步骤窗口 24..84——意图识别面板 5 段渐入（顺时针依次出现、常驻累计，各 12s），完成后进入定界定位
+    // 投诉识别子步骤：V6.84（用户规格）意图识别面板废止——卡底描述仅展示输出行
+    //（投诉现象和投诉意图：场景，窗口 24..84 全程驻留；84 起被定界定位首句替换）
+    { t: 24, type: 'mini', k: 'WAIMO', i: 0, st: 'active', desc: D2.sb },
+    // 识别步骤窗口 24..84——（原意图识别面板 5 段渐入已废止；单步节拍见 panel-timing）
     { t: 84, type: 'mini', k: 'WAIMO', i: 0, st: 'done' },
     { t: 84, type: 'step', i: 1, st: 'done' }, { t: 84, type: 'step', i: 2, st: 'active' },
     // 定界定位无详情面板——卡底描述区 3 句依次出现（逐句替换，各 24s，V6.25），完成后检索注册中心
@@ -339,7 +321,7 @@ const c2 = {
     // 与 Task-T 面板同拍结束；步骤3（根因定位）自 Task-T 弹窗出现开始；
     // 事件须按 t 升序（foldWorld 以 ev.t > t 提前 break）——180 块在检索窗口（156..174）之后
     { t: 156, type: 'desc', k: 'WAIMO' },
-    { t: 156, type: 'flow', line: 'reg-waimo-search', on: true, result: '命中：传输投诉处理智能体' },
+    { t: 156, type: 'flow', line: 'reg-waimo-search', on: true, result: 'hit.zx' },
     { t: 162, type: 'log', i: 0 },
     { t: 174, type: 'flow', line: 'reg-waimo-search', on: false },
     { t: 180, type: 'mini', k: 'WAIMO', i: 1, st: 'done' },
@@ -357,7 +339,7 @@ const c2 = {
     { t: 396, type: 'mini', k: 'ZX', i: 0, st: 'done' },
     // 数据关联完成 → 检索注册中心命中粤东/粤西（连线 396..414，检索面板驻留至 420）；
     // 面板在场期间无激活子步骤——卡底描述自然为空（原 V5.10 面板在场遮挡描述事件废止）
-    { t: 396, type: 'flow', line: 'reg-zx-search', on: true, result: '命中：粤东、粤西SPN网络智能' },
+    { t: 396, type: 'flow', line: 'reg-zx-search', on: true, result: 'hit.ydyx' },
     { t: 402, type: 'log', i: 2 },
     { t: 414, type: 'flow', line: 'reg-zx-search', on: false },
     // 检索命中 → 粤东/粤西登场 → 动态编排 420..444（V6.30 缩短：面板 3 段 × 8s）
@@ -432,7 +414,7 @@ const c2 = {
     // 方案上报 粤西→传输 760..784 → 传输→WAIMO 784..808；结果上报 粤西→传输 808..832 →
     // 传输→WAIMO 832..856
     { t: 676, type: 'step', i: 3, st: 'done' }, { t: 676, type: 'step', i: 4, st: 'active' },
-    { t: 676, type: 'mini', k: 'WAIMO', i: 2, st: 'active', desc: '授权网络智能执行业务自动抢通。' },
+    { t: 676, type: 'mini', k: 'WAIMO', i: 2, st: 'active', desc: 'desc.autoRestore' },
     { t: 688, type: 'mini', k: 'WAIMO', i: 2, st: 'done' },
     { t: 688, type: 'flow', line: 'zx-yx-task', on: true, label: 'Authorization-T' },
     { t: 692, type: 'log', i: 10 },
@@ -500,7 +482,27 @@ for (const c of [c1, c2]) {
   c.beats = [...new Set(c.events.map((e) => e.t).concat(panelStageBeats(c)).concat(c.total))].sort((a, b) => a - b);
 }
 
-export const CASES = { c1, c2 };
+// V6.85（用户规格）：EN 意图识别子步骤仅展示 3 观众秒（1x）——V6.84 意图识别面板废止后
+// 识别段仅剩卡底一行输出描述，原 60 业务秒（1x 15 观众秒）空转过长。EN 时间线变体：
+// 识别窗压缩 60→12 业务秒（1x = 3 观众秒），其后全部事件前移 48 业务秒；总长/边界/
+// 单步节拍随重算（详情面板窗口由事件推导自动跟随；日志时钟为冻结文案不受影响）；zh 不变。
+// CASES 为 Proxy——按当前语言解析变体（运行时切换语言即切时间线，回放按新线重折叠）
+const EN_IDENT_T = 12; // EN 识别窗业务秒（1x = 3 观众秒）
+const enVariant = (c) => {
+  const v = { ...c, durations: [...c.durations] };
+  const b1 = c.boundaries[1];                       // 识别步骤终点（两案均 84）
+  const shift = b1 - (c.boundaries[0] + EN_IDENT_T); // 前移量（48）
+  v.durations[1] = EN_IDENT_T;
+  v.events = c.events.map((e) => (e.t >= b1 ? { ...e, t: e.t - shift } : { ...e }));
+  v.total = v.durations.reduce((a, b) => a + b, 0);
+  v.boundaries = [];
+  let acc = 0;
+  for (const d of v.durations) { acc += d; v.boundaries.push(acc); }
+  v.beats = [...new Set(v.events.map((e) => e.t).concat(panelStageBeats(v)).concat(v.total))].sort((a, b) => a - b);
+  return v;
+};
+const CASE_VARIANTS = { zh: { c1, c2 }, en: { c1: enVariant(c1), c2: enVariant(c2) } };
+export const CASES = new Proxy({}, { get: (_, k) => (getLang() === 'en' ? CASE_VARIANTS.en : CASE_VARIANTS.zh)[k] });
 export const AGENTS = ['WAIMO', 'ZX', 'YD', 'YX'];
 
 export function initialWorld(c) {

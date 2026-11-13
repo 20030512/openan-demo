@@ -2,6 +2,7 @@
 import React from 'react';
 import { ZOOM } from '../roles';
 import { ZOOM_MIN, ZOOM_MAX } from '../StorylineContext';
+import { T } from '../../i18n';
 
 const boxStyle = (b) => ({ left: b.x, top: b.y, width: b.w, height: b.h });
 // V5.28（用户规格）：＋/－图标 CSS 重建（设计版隐藏，见 roles.js）——图标样式
@@ -27,9 +28,9 @@ export default function ZoomToolbar({ pub }) {
       <div style={glyphBox(ZOOM.minusBox)}>
         <div style={{ ...GLYPH_BAR, left: 1, top: 6, width: 12, height: 2 }} />
       </div>
-      <button style={boxStyle(ZOOM.fitBox)} onClick={api.zoomFit} title="适应画布" aria-label="适应画布" />
-      <button style={boxStyle(ZOOM.plusBox)} onClick={api.zoomIn} title="放大" aria-label="放大" disabled={zoom >= ZOOM_MAX} />
-      <button style={boxStyle(ZOOM.minusBox)} onClick={api.zoomOut} title="缩小" aria-label="缩小" disabled={zoom <= ZOOM_MIN} />
+      <button style={boxStyle(ZOOM.fitBox)} onClick={api.zoomFit} title={T('zoom.fit')} aria-label={T('zoom.fit')} />
+      <button style={boxStyle(ZOOM.plusBox)} onClick={api.zoomIn} title={T('zoom.in')} aria-label={T('zoom.in')} disabled={zoom >= ZOOM_MAX} />
+      <button style={boxStyle(ZOOM.minusBox)} onClick={api.zoomOut} title={T('zoom.out')} aria-label={T('zoom.out')} disabled={zoom <= ZOOM_MIN} />
     </div>
   );
 }

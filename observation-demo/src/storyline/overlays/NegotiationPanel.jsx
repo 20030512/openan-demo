@@ -18,8 +18,8 @@ const OUT_MS = 800; // 协商窗口结束后延迟卸载（淡出 + 光束/选�
 // V6.4（1020 文档修订）：工单2 新增协商——粤西 A端端口 P10003-C01（V6.77 虚拟化）不含子接口标识，
 // 专线补 cvlan=409；cvlan 选项区末枚随案（c1 cvlan1208 / c2 cvlan409）
 const CASE_NEG = {
-  c1: { vlan: 'cvlan1208', propose: '接入端口名称不唯一，该端口下存在多个业务接入口，请提供具体的子接口ID或VLAN ID以确认唯一的业务。' },
-  c2: { vlan: 'cvlan409', propose: '接入端口名称不唯一，该端口下存在多个业务接入口，请提供具体的子接口ID或VLAN ID以确认唯一的业务。',
+  c1: { vlan: 'cvlan1208', propose: 'neg.propose' },
+  c2: { vlan: 'cvlan409', propose: 'neg.propose',
     options: [
       { id: 'cvlan99', label: 'cvlan99' },
       { id: 'cvlan100', label: 'cvlan100' },

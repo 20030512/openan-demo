@@ -6,6 +6,7 @@
 // 左栏也收起时，日志把手 x 随日志面板拉伸映射（logStretchX）保持居中。
 import React from 'react';
 import { logStretchX } from '../roles';
+import { T } from '../../i18n';
 
 const Arrow = ({ dir }) => {
   const rot = { right: 0, down: 90, left: 180, up: 270 }[dir] || 0;
@@ -25,14 +26,14 @@ export default function PanelHandles({ pub }) {
     <>
       {ordersHidden ? (
         <button className="st-panelhandle" style={{ left: 0, top: 540, width: 12, height: 48, borderRadius: '4px 0 0 4px' }}
-          onClick={api.toggleOrders} title="展开工单列表" aria-label="展开工单列表">
+          onClick={api.toggleOrders} title={T('order.expand')} aria-label={T('order.expand')}>
           {/* V6.2（用户规格）：收起后变展开图标——箭头右指（面板向右展开，原左指废止） */}
           <Arrow dir="right" />
         </button>
       ) : null}
       {logHidden ? (
         <button className="st-panelhandle" style={{ left: lgLeft, top: 1068, width: 48, height: 12, borderRadius: '0 0 4px 4px' }}
-          onClick={api.toggleLog} title="展开A2A-T协作日志" aria-label="展开A2A-T协作日志">
+          onClick={api.toggleLog} title={T('log.expand')} aria-label={T('log.expand')}>
           <Arrow dir="up" />
         </button>
       ) : null}

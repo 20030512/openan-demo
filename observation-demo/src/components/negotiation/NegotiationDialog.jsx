@@ -3,6 +3,7 @@ import './NegotiationDialog.css'
 import cpePanelUrl from './assets/cpe-panel.svg'
 import { bubblePaths, bubbleClip } from '../panels/TBubble.jsx'
 import wrapLines from '../panels/textWrap.js'
+import { T, isEn } from '../../i18n'
 
 const OPTIONS = [
   { id: 'cvlan99', label: 'cvlan99' },
@@ -72,19 +73,23 @@ function Bubble({ width, height, tail, gradientId, className, children }) {
   )
 }
 
-export default function NegotiationDialog({ defaultSelected = 'cvlan1208', options = OPTIONS, proposeText = '接入端口名称不唯一，该端口下存在多个业务接入口，请提供具体的子接口ID或VLAN ID以确认唯一的业务。', accepted = false }) {
+export default function NegotiationDialog({ defaultSelected = 'cvlan1208', options = OPTIONS, proposeText = 'neg.propose', accepted = false }) {
   const [selected, setSelected] = useState(null)
   const listRef = useRef(null)
   const vlan = (selected || defaultSelected).replace('cvlan', '')
 
   // V5.43（用户规格）：文字距气泡边沿 1rem（16 设计px）上下左右——文字区宽 = 气泡宽−32；
   // Propose：顶 16 + 行数×20 + 底 16；Accept：文字底至 CPE 面板间距 23（原设计节奏保留）
-  const proposeLines = wrapLines('Propose：' + proposeText, 219)
+  const proposeBody = T(proposeText)
+  const proposeLabel = isEn() ? 'Propose: ' : 'Propose：'
+  const proposeLines = wrapLines(proposeLabel + proposeBody, 219)
   const proposeH = 16 + proposeLines * 20 + 16
   // Accept：V5.4（用户反馈：图片遮盖文字，下移图片）——文字与 CPE 面板图片间距恢复
   // 原设计节奏（2 行时 img 67 / radio 139 / 高 180）：顶 16 + 行数×20 + 间距 23；
   // 配合 .nd-bubble__text margin:0（原 <p> 默认边距使文字下移 12px，已清除）
-  const acceptText = 'Accept：通过资管查询Skill获取到vlan信息，补充cvlan：' + vlan + '。'
+  const acceptText = isEn()
+    ? 'Accept: vlan info obtained via the asset-query Skill, cvlan supplemented: ' + vlan + '.'
+    : 'Accept：通过资管查询Skill获取到vlan信息，补充cvlan：' + vlan + '。'
   const acceptLines = wrapLines(acceptText, 272)
   const imgTop = 16 + acceptLines * 20 + 23
   const radioTop = imgTop + 48 + 24
@@ -110,11 +115,11 @@ export default function NegotiationDialog({ defaultSelected = 'cvlan1208', optio
   }, [accepted, defaultSelected])
 
   return (
-    <div className="negotiation-dialog" role="dialog" aria-label="Negotiation-T 详细交互流程">
+    <div className="negotiation-dialog" role="dialog" aria-label={'Negotiation-T ' + T('lbl.interactDetails')}>
       <div className="nd-accent-bar" />
       <div className="nd-title">
         <span className="nd-title__name">Negotiation-T</span>
-        <span className="nd-title__desc">详细交互流程</span>
+        <span className="nd-title__desc">{T('lbl.interactDetails')}</span>
       </div>
 
       {/* 消息列表：垂直方向真实滚动 */}
@@ -128,7 +133,7 @@ export default function NegotiationDialog({ defaultSelected = 'cvlan1208', optio
           className="nd-bubble--propose"
         >
           <p className="nd-bubble__text nd-bubble__text--propose">
-            Propose：{proposeText}
+            {proposeLabel}{proposeBody}
           </p>
         </Bubble>
 
@@ -153,11 +158,11 @@ export default function NegotiationDialog({ defaultSelected = 'cvlan1208', optio
               className="nd-port-grid-svg"
               src={cpePanelUrl}
               style={{ top: imgTop }}
-              alt="CPE 端口面板"
+              alt={T('neg.cpeAlt')}
               draggable={false}
             />
 
-            <div className="nd-radio-group" role="radiogroup" aria-label="cvlan 选项" style={{ top: radioTop }}>
+            <div className="nd-radio-group" role="radiogroup" aria-label={T('neg.cvlanOpts')} style={{ top: radioTop }}>
               {options.map((opt) => {
                 const isSelected = opt.id === selected
                 return (

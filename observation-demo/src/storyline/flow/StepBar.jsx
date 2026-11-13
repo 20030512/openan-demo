@@ -8,6 +8,7 @@
 import React from 'react';
 import { CHEVRONS, satCssStyle } from '../roles';
 import { CASES } from '../cases';
+import { T } from '../../i18n';
 import './flow.css';
 
 // 图标（设计烤入七枚，V5.45/V5.68 全白剪影——CSS filter 见 .fl-chip img）
@@ -49,10 +50,10 @@ export default function StepBar({ world, pub }) {
         className={'fl-chip' + (s === 'active' ? ' fl-chip--active' : '') + (s === 'todo' ? ' fl-chip--todo' : '')}
         style={{ clipPath: clip, ...satCssStyle(pub, ch.box, c) }}
         onClick={() => pub.api.replayStep(i)}
-        title={names[i]}>
+        title={T(names[i])}>
         <img src={'/icons/' + ICONS[i] + '.svg'} alt="" draggable={false} />
-        <span className="fl-chip__name">{names[i]}</span>
-        <span className="fl-chip__dur">{bdur[i]}</span>
+        <span className="fl-chip__name">{T(names[i])}</span>
+        <span className="fl-chip__dur">{T(bdur[i])}</span>
       </div>
     );
   });

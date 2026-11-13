@@ -2,6 +2,7 @@ import React from 'react'
 import useStageClock from './useStageClock.js'
 import wrapLines from './textWrap.js'
 import { DISPATCH_WEIGHTS } from '../../storyline/panel-timing.js'
+import { T } from '../../i18n'
 
 /* DispatchPanel — 调度处置面板（V6.0 流式布局：正文横向流式——消息气泡 | 光束 | 手机 | 光束 | 回复）
    V3.30：动态分步（窗口：WAIMO mini2 激活 → Notification-T 面板窗口起点）：
@@ -11,27 +12,26 @@ import { DISPATCH_WEIGHTS } from '../../storyline/panel-timing.js'
    消息气泡高度随文字折行自适应（16 + 行数×16 + 16），梯形光束高度随气泡联动；
    回复气泡 16/16 内边距（高 48）。 */
 
-// 消息文案（V4：原文档 APP 定位结果；V6.77 端口虚拟化——P10005-A02，
-// 原真实机房/板卡端口不再留存；V6.24：工单2 调度处置无弹窗（dispatchPanel:false）——本面板仅工单1 挂载）
-const MSG_TEXT = '投诉工单的定位结果：P10005-A02 的 12-2 端口收光无光，发光正常，原因是光纤中断。请前往故障点修复。'
+// 消息文案（V4：原文档 APP 定位结果；i18n 占位键 dp.msg——工单2 调度处置无弹窗，本面板仅工单1 挂载）
+const MSG_TEXT = 'dp.msg'
 
 export default function DispatchPanel(props) {
   const stage = useStageClock(props, 3, DISPATCH_WEIGHTS)
   const on = (k) => (stage >= k ? ' ir-on' : '')
   // 消息气泡高度：padding 1rem(16)×2 + 行数×行高 1rem(16)（文字区宽 136 = 10.5rem−32）
-  const msgH = 32 + wrapLines(MSG_TEXT, 136, 12) * 16
+  const msgH = 32 + wrapLines(T(MSG_TEXT), 136, 12) * 16
   return (
     <div className="glass-panel tdialog fp-col" style={{ width: 360, height: 208 }}>
       <div className="fp-head">
         <div className="p-title-bar" />
-        <div className="p-title-text">调度处置</div>
+        <div className="p-title-text">{T('dp.title')}</div>
       </div>
 
       {/* 正文横向流式：消息气泡 → 光束 → 手机 → 光束 → 回复（垂直居中，气泡随行自适应） */}
       <div className="fp-body fp-row" style={{ padding: '0.5rem 1rem 1rem', justifyContent: 'center', gap: 0 }}>
         {/* ② 消息气泡（V4：原文档 APP 定位结果；V5.43 高度自适应 + 1rem 内边距） */}
         <div className={'disp-msg ir-reveal' + on(2)} style={{ position: 'static' }}>
-          {MSG_TEXT}
+          {T(MSG_TEXT)}
         </div>
 
         {/* ② 梯形光束：手机（小边）→ 消息气泡（大边）；高度随气泡（V5.43 联动） */}
@@ -61,7 +61,7 @@ export default function DispatchPanel(props) {
         </svg>
 
         {/* ③ 回复气泡 */}
-        <div className={'disp-reply ir-reveal' + on(3)} style={{ position: 'static' }}>收到</div>
+        <div className={'disp-reply ir-reveal' + on(3)} style={{ position: 'static' }}>{T('dp.reply')}</div>
       </div>
     </div>
   )

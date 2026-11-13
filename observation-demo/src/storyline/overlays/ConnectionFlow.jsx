@@ -14,6 +14,7 @@ import { pathLength, pillCounterTransform } from '../roles';
 import { flowPick, flowPickRev } from './ConnectionLines';
 import { CASES } from '../cases';
 import { taskTWindowOf, notifWindowOf } from '../panel-timing';
+import { T, isEn } from '../../i18n';
 
 const FONT = "'HarmonyOS Sans SC','HarmonyOS Sans','HarmonyHeiTi','Microsoft YaHei','PingFang SC',sans-serif";
 // V5.61→V5.62（用户规格）：光束总长减半（150→70）、粗细颠倒——**终点（目标卡）
@@ -60,8 +61,9 @@ const LABEL_COLORS = {
   // lc-waimo-report 线，事件覆盖标签；青色系信息通知类，同 Notification-T 配色）
   '工单根因': { bg: 'rgba(44,184,201,0.15)', fg: 'rgba(85,204,217,1)' },
 };
-// 胶囊宽度估算（CJK 12px / 西文 6.3px + 两侧留白，与设计稿 Task-T=52、Negotiation-T=93 对齐）
-const textW = (t) => Math.round([...t].reduce((a, c) => a + (c.charCodeAt(0) > 0x2e7f ? 12 : 6.3), 0)) + 13;
+// 胶囊宽度估算（CJK≈fs/字 / 西文≈6.3×fs/12/字 + 两侧留白，与设计稿 Task-T=52、Negotiation-T=93 对齐；
+// V6.82：fs 参数化——检索线胶囊 9.6px 用同式缩放）
+const textW = (t, fs = 12) => Math.round([...t].reduce((a, c) => a + (c.charCodeAt(0) > 0x2e7f ? fs : (fs / 12) * 6.3), 0)) + 13;
 // 连线下方 A2A-T 消息（V2.16 调大至 12px）：宽度按连线长度截断，展示不全以 …… 结尾。
 // V5.4（用户反馈：消息越出连线两端、覆盖节点卡片）：原字符估宽偏窄（西文实际 ~7px、
 // 省略号为全角 12px）→ 改用 canvas measureText 按实际字体度量（缓存），截断上限再留
@@ -140,8 +142,14 @@ export default function ConnectionFlow({ world, pub }) {
         const resp = rev && base ? RESP_LABEL[base.text] : null;
         // 胶囊文案：事件覆盖（label）> 响应变体（rev）> 设计标签；非设计文案 → 宽度按字宽估算，以原胶囊中心居中
         const text = fo.label || (resp ? resp.text : (base ? base.text : null));
+        const tText = T(text);
         const colors = (fo.label && LABEL_COLORS[fo.label]) || resp || base;
-        const w = text && base && text !== base.text ? textW(text) : (L ? L.pillBox.w : 0);
+        const searchLine = key === 'reg-waimo-search' || key === 'reg-zx-search';
+        const pillFont = searchLine ? 9.6 : 12;
+        // V6.82（用户规格）：宽度判定改用**译后**文案（原 text !== base.text 拿中文原文比恒等
+        // → EN 误走 zh 定宽 pillBox.w，Fetch Order/Order Closure 溢出 2~8px/侧）；
+        // 检索线胶囊 9.6px 同式缩放
+        const w = text && base && tText !== base.text ? textW(tText, pillFont) : (L ? L.pillBox.w : 0);
         const cx = L ? L.pillBox.x + L.pillBox.w / 2 : 0;
         const x = cx - w / 2;
         // V2.20：消息截断上限 = 连线水平跨度；消息以胶囊中心居中，个别胶囊中心略偏离线中点时
@@ -160,7 +168,6 @@ export default function ConnectionFlow({ world, pub }) {
         // 无面板承载，保留连线文字；V5.17：工单2 面板窗口前的 Task-T响应 372..384 同样保留）
         // V5.14（用户规格）：检索智能体弹框在场——检索连线（reg-waimo-search / reg-zx-search）
         // **仅展示协议胶囊**，命中结果/消息文字均不展示（信息由检索面板承载）
-        const searchLine = key === 'reg-waimo-search' || key === 'reg-zx-search';
         const msgHidden = key === 'waimo-zx-task'
           || (key === 'waimo-zx-notif' && notifHold)
           || (world.negotiation && (key === 'zx-yx-neg' || key === 'zx-yx-task'))
@@ -171,7 +178,6 @@ export default function ConnectionFlow({ world, pub }) {
         const pillX = pillCx - w / 2;
         const pillBg = searchLine ? SEARCH_PILL.bg : colors.bg;
         const pillFg = searchLine ? SEARCH_PILL.fg : colors.fg;
-        const pillFont = searchLine ? 9.6 : 12;
         return (
           <g key={key} data-key={key} data-dir={rev ? 'rev' : 'fwd'}>
             {COMET.map((cfg, i) => (
@@ -189,11 +195,11 @@ export default function ConnectionFlow({ world, pub }) {
                   <rect x={pillX} y={L.pillBox.y} width={w} height={L.pillBox.h}
                     rx={searchLine ? 3.2 : 4} fill={pillBg} />
                   <text x={pillCx} y={L.pillBox.y + 16.5} textAnchor="middle"
-                    fontSize={pillFont} fontWeight="400" fontFamily={FONT} fill={pillFg}>{text}</text>
+                    fontSize={pillFont} fontWeight="400" fontFamily={FONT} fill={pillFg}>{tText}</text>
                 </g>
                 {fo.result && base && !searchLine ? (
                   <text className="st-flow-result" x={x + w + 8} y={L.pillBox.y + 16.5}
-                    fontSize="12" fontWeight="400" fontFamily={FONT} fill={base.fg}>{fo.result}</text>
+                    fontSize="12" fontWeight="400" fontFamily={FONT} fill={base.fg}>{T(fo.result)}</text>
                 ) : null}
                 {fo.msg && !msgHidden ? (
                   // A2A-T 消息：连线下方展示（胶囊/连线之下）——V6.5（用户规格）：文字距连线
@@ -202,9 +208,12 @@ export default function ConnectionFlow({ world, pub }) {
                   // V6.57（用户规格）：0.5rem 实装修正——V6.5 按「胶囊底≈线顶−4」推得基线 =
                   // 胶囊底+12+13，实测胶囊底≈线顶−0.5~−1.5，文字顶≈线顶+11.5 偏移过大；
                   // 改 +8：文字顶 = 胶囊底 + 8 ≈ 线顶 + 7~8px（12px 文本 bbox 顶偏移≈13）
+                  // V6.83（用户规格）：EN 不用省略号——EN 卡按内容加宽后 WAIMO—ZX 间隙仅
+                  // ~75px，waimo-zx-notif 线消息被截成 Result Sum…/Restoration…（信息丢失）；
+                  // EN 展示全文（居线中点、可越线端），zh 维持原截断口径
                   <text className="st-flow-msg" data-key={key} x={cx} y={L.pillBox.y + L.pillBox.h + 8 + 13}
                     textAnchor="middle" fontSize="12" fontWeight="400" fontFamily={FONT}
-                    fill="rgba(201,201,201,1)">{fitMsg(fo.msg, Math.max(0, msgMax - 8))}</text>
+                    fill="rgba(201,201,201,1)">{isEn() ? T(fo.msg) : fitMsg(T(fo.msg), Math.max(0, msgMax - 8))}</text>
                 ) : null}
               </g>
             ) : null}
@@ -239,7 +248,7 @@ export default function ConnectionFlow({ world, pub }) {
               <rect x={L.pillBox.x} y={L.pillBox.y} width={L.pillBox.w} height={L.pillBox.h}
                 rx="4" fill={base.bg} />
               <text x={cx} y={L.pillBox.y + 16.5} textAnchor="middle"
-                fontSize="12" fontWeight="400" fontFamily={FONT} fill={base.fg}>{base.text}</text>
+                fontSize="12" fontWeight="400" fontFamily={FONT} fill={base.fg}>{T(base.text)}</text>
             </g>
           </g>
         );

@@ -42,6 +42,8 @@
 .fl-pills {
   display: flex;
   flex-wrap: wrap;
+  /* V6.80（用户规格）：单行胶囊与双行胶囊同行时垂直居中对齐 */
+  align-items: center;
   justify-content: center;
   gap: 0.5rem 0.5rem;
   margin-top: 0.75rem;
@@ -61,12 +63,27 @@
   white-space: nowrap;
 }
 .fl-pill img { width: 0.75rem; height: 0.75rem; }
+/* V6.80（用户规格）：EN 双词技能标签换行展示——每词一行纵向堆叠（zh 无空格不受影响）；
+    高度自适应（min-height 保单行口径 1.25rem），图标随 align-items:center 与双行文字垂直居中 */
+.fl-pill--wrap {
+  height: auto;
+  min-height: 1.25rem;
+  padding: 0.1875rem 0.5rem;
+}
+.fl-pill__lines {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+.fl-pill__line { line-height: 0.8125rem; }
 /* 编排中心子卡（ZX 卡内，V6.2 用户规格：5.75×1.75rem / 图标 1.25rem / 文字 0.75rem） */
 .fl-cc {
   display: flex;
   align-items: center;
   gap: 0.375rem;
-  width: 5.75rem;
+  /* V6.81（用户规格）：定宽→min-width——EN Orchestration Center 超定宽 63px；
+     按内容自适应后 zh 四字恒 92px 逐像素不变（同 .fl-badge 口径） */
+  min-width: 5.75rem;
   height: 1.75rem;
   padding: 0 0.5rem;
   box-sizing: border-box;
@@ -86,8 +103,11 @@
   position: absolute;
   top: 0;
   left: 0;
-  width: 3.25rem;
+  /* min-width + 横向 padding：EN 已完成→Completed / 进行中→In Progress 长于定宽
+     3.25rem——角标随文字增长（zh 三字 36+16=52 与原定宽逐像素一致） */
+  min-width: 3.25rem;
   height: 1.5rem;
+  padding: 0 0.5rem;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -395,8 +415,11 @@
 }
 .fl-order__pill {
   flex: none;
-  width: 3.25rem;
+  /* 同 .fl-badge：min-width+padding 随文字增长（EN Completed/Replaying 超定宽；
+     zh 已完成 36+12=48 < 52 视觉不变） */
+  min-width: 3.25rem;
   height: 1.5rem;
+  padding: 0 0.375rem;
   display: flex;
   align-items: center;
   justify-content: center;

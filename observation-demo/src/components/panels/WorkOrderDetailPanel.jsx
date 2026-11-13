@@ -1,4 +1,5 @@
 import React from 'react'
+import { T } from '../../i18n'
 
 /* WorkOrderDetailPanel — 工单展开详情 · 下拉面板
    V6.31：自 react-panels 源复制（V4.0 · 容器 1111309）——16×20.125rem 下拉面板：
@@ -14,13 +15,13 @@ export default function WorkOrderDetailPanel({ head, desc, rows = [] }) {
        V6.63（用户规格）：宽度改 100%——详情由卡下挂接改弹窗承载（WorkOrderModal 内全宽）；
        V6.66（用户规格）：标题/描述改信息行（工单标题/投诉信息）——head/desc 可缺省纯表单 */
     <div className="wo-panel" style={{ width: '100%' }}>
-      {head ? <div className="wo-text">{head}</div> : null}
-      {desc ? <div className="wo-text wo-desc">{desc}</div> : null}
+      {head ? <div className="wo-text">{T(head)}</div> : null}
+      {desc ? <div className="wo-text wo-desc">{T(desc)}</div> : null}
       <div className="wo-rows">
         {rows.map((r) => (
           <div className="wo-row" key={r.label}>
-            <span className="wo-label">{r.label}</span>
-            <span className="wo-value">{r.value}</span>
+            <span className="wo-label">{T(r.label)}</span>
+            <span className="wo-value">{T(r.value)}</span>
           </div>
         ))}
       </div>

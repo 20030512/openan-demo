@@ -13,6 +13,7 @@ import { logStretchX } from '../roles';
 import { CASES } from '../cases';
 import { LOG_H_DEFAULT } from '../StorylineContext';
 import LogTable from '../overlays/LogTable';
+import { T } from '../../i18n';
 import './flow.css';
 
 const Arrow = () => (
@@ -53,12 +54,12 @@ export default function FlowLogPanel({ pub }) {
     <div className="fl-logpanel" style={{ left, top, width, height: logH }}>
       {/* 顶缘拖拽条（全宽，覆盖把手唇区+顶线上下，cursor row-resize） */}
       <div className="fl-logdrag" onPointerDown={onDown} onPointerMove={onMove} onPointerUp={onUp}
-        onPointerCancel={onUp} title="拖拽调整日志面板高度" />
+        onPointerCancel={onUp} title={T('log.dragResize')} />
       {/* 收起把手（居中 48×12，设计版式：位于顶线上方——panel 顶缘 12px 唇区内，
           上圆角、下缘开口与面板相接；拖拽与点击按位移判别） */}
       <button className="fl-logtab" onPointerDown={onDown} onPointerMove={onMove} onPointerUp={onUp}
         onPointerCancel={onUp} onClick={() => { if (!g.current.moved) pub.api.toggleLog(); }}
-        title={logH !== LOG_H_DEFAULT ? '回到默认位置' : '收起A2A-T协作日志'} aria-label="收起A2A-T协作日志">
+        title={logH !== LOG_H_DEFAULT ? T('log.resetPos') : T('log.collapse')} aria-label={T('log.collapse')}>
         <Arrow />
       </button>
       {/* 面板主体：自顶线下（+12）至底——渐变底 + backdrop blur + 1px 顶线（#393939）；
@@ -66,8 +67,8 @@ export default function FlowLogPanel({ pub }) {
       <div className="fl-logbg" />
       {/* 头部：渐变标题（设计 23:137193 同款规格）+ 实时计数（右对齐） */}
       <div className="fl-loghead" style={{ position: 'absolute', left: 16, right: 16, top: 28 }}>
-        <div className="fl-loghead__title">A2A-T协作日志</div>
-        <div className="fl-loghead__count">{n}条</div>
+        <div className="fl-loghead__title">{T('log.title')}</div>
+        <div className="fl-loghead__count">{T(n + '条')}</div>
       </div>
       {/* 表体：面板本地系（top 62 = 944−882；高度随 logH） */}
       <LogTable logs={logs} anchor={pub.world ? 'bottom' : 'top'} pub={pub} />

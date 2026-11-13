@@ -11,8 +11,8 @@ import React from 'react';
 import { CARDS, LINES, satCssStyle } from '../roles';
 import { CASES, TIME_SCALE } from '../cases';
 import { cardRect } from '../flow/geometry';
-import { taskTWindowOf, searchWindowOf, orchestrationWindowOf, notifWindowOf, dispatchWindowOf, intentWindowOf, authorizationWindowOf } from '../panel-timing';
-import IntentRecognitionPanel from '../../components/panels/IntentRecognitionPanel.jsx';
+import { getLang } from '../../i18n';
+import { taskTWindowOf, searchWindowOf, orchestrationWindowOf, notifWindowOf, dispatchWindowOf, authorizationWindowOf } from '../panel-timing';
 import SearchAgentPanel from '../../components/panels/SearchAgentPanel.jsx';
 import DispatchPanel from '../../components/panels/DispatchPanel.jsx';
 import DynamicOrchestrationPanel from '../../components/panels/DynamicOrchestrationPanel.jsx';
@@ -50,21 +50,8 @@ const belowCard = (k, w, h, dy) => (pub) => {
 // V4：意图识别/Task-T/调度处置/Notification-T 面板注入 caseId——文案随案例切换（工单1/工单2）
 const PANEL_DEFS = [
   {
-    // V3.21：意图识别面板分步动态（输入→思考→行动→观察→输出）；
-    // V6.2（用户规格）：子步骤详情面板位于子步骤（卡）下方 0.5rem、左侧与卡视觉左缘对齐
-    //（V6.3 随卡几何重算：WAIMO 底 678 → top 686；左 = 卡视觉左缘 648）
-    // V6.47（用户规格）：面板长度增加 0.5 倍——宽 498→747（意图面板窗口期专线卡
-    // 未登场，加宽不遮卡；底部仍盖日志表，V5.53 层序语义不变）
-    // V6.51→V6.52（用户规格）：c2 思考/行动 说明文字可上探面板标题（条）区——
-    // 面板高度回退 V6.47 版 232（不再加高），构图原位；
-    // V6.70（用户规格）：面板加高 232→240——输出末行距面板下边沿 0.5rem（见
-    // IntentRecognitionPanel V6.70：底锚文字/输入列同步补偿/冻结）
-    key: 'intent', Comp: IntentRecognitionPanel,
-    props: (pub) => ({ ...intentWindowOf(CASES[pub.caseId]), t: pub.t, mode: pub.mode, speed: pub.speed, timeScale: TIME_SCALE, caseId: pub.caseId }),
-    when: (w, pub) => { const { t0, t1 } = intentWindowOf(CASES[pub.caseId]); return pub.t >= t0 && pub.t < t1; },
-    box: belowCard('WAIMO', 747, 240), anchor: () => center(CARDS.WAIMO.box),
-  },
-  {
+    // V6.84（用户规格）：意图识别面板废止——不再挂载；投诉识别子步骤内容改由 WAIMO
+    // 卡底描述承载（仅输出行，见 cases.js mini0 desc / d1.sb·d2.sb 词典键）。
     // V3.30：调度处置面板三段分步；V6.2：位于 WAIMO 卡下方 0.5rem、左对齐卡视觉左缘
     key: 'dispatch', Comp: DispatchPanel,
     props: (pub) => ({ ...dispatchWindowOf(CASES[pub.caseId]), t: pub.t, mode: pub.mode, speed: pub.speed, timeScale: TIME_SCALE, caseId: pub.caseId }),
@@ -89,7 +76,8 @@ const PANEL_DEFS = [
     key: 'search-waimo', Comp: SearchAgentPanel,
     props: (pub) => ({ ...searchWindowOf(CASES[pub.caseId], 'reg-waimo-search'), t: pub.t, mode: pub.mode, speed: pub.speed, timeScale: TIME_SCALE, selected: ['zx'] }),
     when: (w, pub) => { const { t0, t1 } = searchWindowOf(CASES[pub.caseId], 'reg-waimo-search'); return pub.t >= t0 && pub.t < t1; },
-    box: { x: 521, y: 220, w: 236, h: 194 }, anchor: () => center(PLATFORM),
+    // V6.82（用户规格）：EN 副题折两行——检索面板盒高 194→204（与 SearchAgentPanel 同步）
+    box: () => ({ x: 521, y: 220, w: 236, h: getLang() === 'en' ? 204 : 194 }), anchor: () => center(PLATFORM),
   },
   {
     // V3.19：专线检索面板置于检索结果文字（命中：粤东、粤西SPN…，胶囊右侧 1042..1235 × 280..296）
@@ -97,7 +85,8 @@ const PANEL_DEFS = [
     key: 'search-zx', Comp: SearchAgentPanel,
     props: (pub) => ({ ...searchWindowOf(CASES[pub.caseId], 'reg-zx-search'), t: pub.t, mode: pub.mode, speed: pub.speed, timeScale: TIME_SCALE, selected: ['yd', 'yx'] }),
     when: (w, pub) => { const { t0, t1 } = searchWindowOf(CASES[pub.caseId], 'reg-zx-search'); return pub.t >= t0 && pub.t < t1; },
-    box: { x: 896, y: 306, w: 236, h: 194 },
+    // V6.82（用户规格）：EN 副题折两行——检索面板盒高 194→204（与 SearchAgentPanel 同步）
+    box: () => ({ x: 896, y: 306, w: 236, h: getLang() === 'en' ? 204 : 194 }),
     anchor: () => ({ x: (center(PLATFORM).x + center(CARDS.ZX.box).x) / 2, y: (center(PLATFORM).y + center(CARDS.ZX.box).y) / 2 }),
   },
   {
@@ -124,7 +113,8 @@ const PANEL_DEFS = [
     props: (pub) => ({ ...notifWindowOf(CASES[pub.caseId]), t: pub.t, mode: pub.mode, speed: pub.speed, timeScale: TIME_SCALE, caseId: pub.caseId }),
     when: (w, pub) => { const { t0, t1 } = notifWindowOf(CASES[pub.caseId]); return pub.t >= t0 && pub.t < t1; },
     // V6.70（用户规格）：Notification-T 删「隧道状态」行——面板高 236→208（14.75→13rem）
-    box: belowLine('waimo-zx-notif', 352, 208), anchor: () => WZ_MID,
+    // V6.82（用户规格）：EN 底部消息折两行——盒高 208→224（与 NotificationTPanel 14rem 同步）
+    box: (pub) => belowLine('waimo-zx-notif', 352, getLang() === 'en' ? 224 : 208), anchor: () => WZ_MID,
   },
   {
     // V6.35（用户规格）：Authorization-T 详细交互流程面板（at4 · 仅工单2 问题处置）——
