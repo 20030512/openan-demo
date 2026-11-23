@@ -16,6 +16,7 @@
 //    under the License.
 import React from 'react';
 import { StoryContext } from '../storyline/StorylineContext';
+import { T } from '../i18n';
 
 const SPRITE_URL = '/design/sprite-2x.png';
 const CANVAS_W = 1920;
@@ -45,7 +46,7 @@ export default function LayerView({ node }) {
   if (st && st.hide) return null;
   const stc = st && st.c ? st.c : undefined;
   const sts = st && st.s ? st.s : undefined;
-  const stTitle = st && st.title ? st.title : undefined;
+  const stTitle = st && st.title ? T(st.title) : undefined;
   // 节点级交互（V2.7：工单卡整卡点击，见 StorylineContext makeInteractions）；点击自子节点冒泡生效
   const inter = pub && pub.interactions ? pub.interactions[node.id] : null;
   const base = {
@@ -90,10 +91,10 @@ export default function LayerView({ node }) {
 
   if (node.kind === 'text') {
     const content = st && st.text !== undefined
-      ? st.text
+      ? T(st.text)
       : (node.segments
-        ? node.segments.map((s, i) => (<span key={i} style={s.style}>{s.text}</span>))
-        : node.text);
+        ? node.segments.map((s, i) => (<span key={i} style={s.style}>{T(s.text)}</span>))
+        : T(node.text));
     return (
       <div data-node={node.name} data-id={node.id} className={stc} title={stTitle}
         onClick={inter ? inter.onClick : undefined}

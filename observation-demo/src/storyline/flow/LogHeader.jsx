@@ -21,6 +21,7 @@
 import React from 'react';
 import { LOGS, logStretchX } from '../roles';
 import { CASES } from '../cases';
+import { T } from '../../i18n';
 import './flow.css';
 
 export default function LogHeader({ pub }) {
@@ -31,8 +32,8 @@ export default function LogHeader({ pub }) {
   const width = logStretchX(pub, 1904) - left; // 右缘与设计计数文字右缘一致（x1904）
   return (
     <div className="fl-loghead" style={{ left, top: 910, width, height: 26 }}>
-      <div className="fl-loghead__title">A2A-T协作日志</div>
-      <div className="fl-loghead__count">{n}条</div>
+      <div className="fl-loghead__title">{T('log.title')}</div>
+      <div className="fl-loghead__count">{T(n + '条')}</div>
     </div>
   );
 }

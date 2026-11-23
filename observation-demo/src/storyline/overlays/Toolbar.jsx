@@ -20,6 +20,7 @@
 // 直接改写设计文字节点（暂停/回放）
 import React, { useState } from 'react';
 import { BUTTONS } from '../roles';
+import { T, getLang } from '../../i18n';
 
 const SPEEDS = [0.5, 1, 2, 4, 8, 16];
 const boxStyle = (b) => ({ left: b.x, top: b.y, width: b.w, height: b.h });
@@ -32,15 +33,17 @@ export default function Toolbar({ pub }) {
   return (
     <div className="st-layer st-toolbar">
       <button className="st-tbtn" style={boxStyle(BUTTONS.play.box)} onClick={api.play}
-        title={playing ? '暂停' : '回放'} aria-label={playing ? '暂停' : '回放'} />
+        title={playing ? T('btn.pause') : T('btn.replay')} aria-label={playing ? T('btn.pause') : T('btn.replay')} />
       <button className="st-tbtn" style={boxStyle(BUTTONS.step.box)} onClick={api.stepOnce}
-        title="单步" aria-label="单步" />
+        title={T('btn.step')} aria-label={T('btn.step')} />
       <button className="st-tbtn" style={boxStyle(BUTTONS.speed.box)} onClick={() => setMenu((m) => !m)}
-        title="倍速" aria-label="倍速" />
+        title={T('btn.speed')} aria-label={T('btn.speed')} />
       <button className="st-tbtn" style={boxStyle(BUTTONS.stop.box)} onClick={api.stop}
-        title="停止" aria-label="停止" />
+        title={T('btn.stop')} aria-label={T('btn.stop')} />
+      {/* V6.81（用户规格）：EN 播放键图标左移居中（i18n.css 23:137022）——暂停覆盖层同步 */
+      }
       {playing ? (
-        <div className="st-pauseicon" style={{ left: pb.x + 14, top: pb.y + 8 }}><span /><span /></div>
+        <div className="st-pauseicon" style={{ left: pb.x + (getLang() === 'en' ? 6 : 14), top: pb.y + 8 }}><span /><span /></div>
       ) : null}
       {menu ? (
         <div className="st-speedmenu" style={{ left: BUTTONS.speed.box.x, top: BUTTONS.speed.box.y + 32 }}>

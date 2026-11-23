@@ -20,6 +20,7 @@
 // 同文案取代（#939393）；输入经 pub.api.setSearch（纯 UI 状态）→ buildUiPatches
 // orderVisible（搜索+状态复合过滤）隐藏不匹配工单卡（角标同步隐藏，见 WorkOrderSel）；Esc 清空
 import React from 'react';
+import { T } from '../../i18n';
 
 export default function LeftSearch({ pub }) {
   const ref = React.useRef(null);
@@ -33,7 +34,7 @@ export default function LeftSearch({ pub }) {
           if (ref.current) ref.current.focus();
         }
       }}
-      title="搜索工单号、投诉客户、会话意图"
+      title={T('lp.searchTitle')}
     >
       <input
         ref={ref}
@@ -43,7 +44,7 @@ export default function LeftSearch({ pub }) {
         onKeyDown={(e) => {
           if (e.key === 'Escape' && pub.search) pub.api.setSearch('');
         }}
-        placeholder="请搜索工单号、投诉客户、会话意图"
+        placeholder={T('lp.searchPh')}
         spellCheck={false}
       />
     </div>

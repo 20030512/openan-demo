@@ -15,9 +15,9 @@
 //    License for the specific language governing permissions and limitations
 //    under the License.
 // panel-timing.js — 面板分步节奏（V3.23；V5 每段 ≥12 业务秒 = 1x 回放 3 观众秒）
-// 三处共用单一来源：IntentRecognitionPanel（步权重）、SubStepPanels（挂载窗口/props）、
+// 三处共用单一来源：详情面板组件（步权重）、SubStepPanels（挂载窗口/props）、
 // cases.js（单步节拍 c.beats 并入面板阶段边界——否则窗口内无事件节拍时单步按钮
-// 一步跨过整个窗口，如意图识别，用户只能看到第一步）。
+// 一步跨过整个窗口，用户只能看到第一步；V6.84 意图识别面板废止后其阶段边界不再并入）。
 // 纯函数（入参为案例对象 c），不依赖其他模块
 
 // V5.2（回退此前逻辑，用户规格）：意图识别面板 5 段等分（各 12 业务秒）、常驻累计——
@@ -29,6 +29,8 @@
 // 各 6 业务秒；观察胶囊随第二段结束出现），释放时长顺延——输出段 30→24 业务秒；
 // V6.56（用户规格）：c1 面板同步补充思考/行动说明文字（文案按案，见组件）——
 // 六段节奏两案统一。六段：①输入 → ②思考 → ③行动一 → ④行动二 → ⑤观察 → ⑥输出
+// V6.84（用户规格）：意图识别面板废止（不再挂载，见 SubStepPanels）——权重表保留
+// 供组件源码（IntentRecognitionPanel.jsx，dormant）编译；单步节拍不再并入面板阶段
 export const INTENT_WEIGHTS = [0.2, 0.1, 0.1, 0.1, 0.1, 0.4];
 
 // V5.2：定界定位无详情面板——内容改在 WAIMO 卡底描述区 4 句依次出现
@@ -160,9 +162,8 @@ export const dispatchWindowOf = (c) => {
   return { t0: w.t0, t1: w.t1 };
 };
 
-// V3.31→V5.2：意图识别面板窗口 = mini0（投诉识别）全窗——5 段渐入且每段 ≥12 业务秒，
-// 全部完成后随 mini0 完成退场（下一步定界定位才开始）
-export const intentWindowOf = (c) => miniWindowOf(c, 'WAIMO', 0);
+// V3.31→V5.2：意图识别面板窗口 = mini0（投诉识别）全窗——V6.84（用户规格）面板废止：
+// intentWindowOf 删除（无调用方）；单步节拍不再并入面板阶段（一步 = 整个识别子步骤）
 
 // 面板阶段边界时刻（业务秒，不含窗口起点——起点本身即事件节拍）：
 // 各窗口按步权重取累计边界；+0.01 容差确保单步落点越过边界（浮点比较安全）；
@@ -177,7 +178,6 @@ export function panelStageBeats(c) {
       if (b > win.t0 + 0.01 && b < win.t1) beats.push(b);
     }
   };
-  push(intentWindowOf(c), INTENT_WEIGHTS);
   push(taskTWindowOf(c), Array(TASKT_STEPS).fill(1 / TASKT_STEPS));
   push(searchWindowOf(c, 'reg-waimo-search'), [0.5, 0.5]);
   push(searchWindowOf(c, 'reg-zx-search'), [0.5, 0.5]);

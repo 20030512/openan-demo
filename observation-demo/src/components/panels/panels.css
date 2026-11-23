@@ -591,6 +591,8 @@
 /* V6.43（用户规格）：工单标题暂空（head 不渲染）——描述作为首行时去顶距 */
 .wo-panel > .wo-desc:first-child { margin-top: 0; }
 .wo-rows { margin-top: 0.5rem; }
+/* V6.66（用户规格）：无标题头/描述段的纯表单（弹窗工单详情）——行区贴面板顶 padding */
+.wo-rows:first-child { margin-top: 0; }
 /* V6.35（用户规格）：行改 flex——label 定宽 3.5rem，value 固定占 label 右侧全部
     剩余宽（值列宽固定，各行一致；集团名称在该列内换行，V6.34） */
 .wo-row { display: flex; }
@@ -598,6 +600,8 @@
 .wo-label {
   flex: none;
   width: 3.5rem;
+  /* label 右对齐：紧贴值列（label-value 关联最短视线；EN 短标签 City/Status 亦贴齐） */
+  text-align: right;
   font-family: var(--font-yh);
   font-size: 0.875rem;
   line-height: 1.375rem;
@@ -616,11 +620,13 @@
 }
 
 /* Notification-T（react-panels .notif-* 与 .nt-*：对比卡横排 + 负边距箭头） */
+/* V6.70（用户规格）：删除「隧道状态」行——对比卡 3 行改 2 行，高 7.5→5.75rem
+   （头 1.75 + 行区 3.5 + 底余 0.5）；箭头纵向居中随调（组件内 marginTop） */
 .notif-card {
   display: inline-block;
   vertical-align: top;
   width: 8.5rem;
-  height: 7.5rem;
+  height: 5.75rem;
   border-radius: 0.375rem;
   border: 0.0625rem solid rgba(255, 255, 255, 0.1);
   background-image: linear-gradient(rgba(255, 255, 255, 0.05), rgba(255, 255, 255, 0.05));
@@ -645,7 +651,8 @@
 .notif-row + .notif-row { margin-top: 0.5rem; }
 .notif-label {
   display: inline-block;
-  width: 3.25rem;
+  /* V6.81（用户规格）：定宽→min-width——EN Packet Loss 超定宽 12.7px；zh 两字恒 52px 不变 */
+  min-width: 3.25rem;
   font-size: 0.75rem;
   line-height: 1.25rem;
   color: #c9c9c9;

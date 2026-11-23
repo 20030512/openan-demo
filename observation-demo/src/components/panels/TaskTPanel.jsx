@@ -18,6 +18,8 @@ import React, { useEffect, useLayoutEffect, useRef, useState } from 'react'
 import TBubble from './TBubble.jsx'
 import useStageClock from './useStageClock.js'
 import wrapLines from './textWrap.js'
+import { measureText, FONT } from '../../storyline/flow/geometry'
+import { T } from '../../i18n'
 
 /* TaskTPanel — Task-T 详细交互流程
    V6.13（用户规格）：布局样式同步 react-panels 源——tt-panel 流式版式：
@@ -31,19 +33,19 @@ import wrapLines from './textWrap.js'
    （高 = 8 + 20 + 4 + 行数×20 + 8），时间轴圆点与各卡片垂直居中
    （spacer = h1/2−4、虚线段 = (hPrev+hNext)/2）。 */
 
-// V4：首行任务描述/任务类型/任务上下文随案例切换（工单1 中断 / 工单2 质差——原文档 Task-T 消息口径）
+// V4：首行任务描述/任务类型/任务上下文随案例切换——值为 i18n 占位键（tt.*）
 const CASE_TT = {
   c1: {
-    first: '发起专线投诉诊断：广州-深圳GE1508KA/P 专线中断',
-    type: '集客专线业务投诉诊断',
-    target: '基于用户的投诉上下文信息，对网络侧故障进行根因诊断，返回故障根因、修复建议等诊断结果信息。',
-    context: '电路编号：广州-深圳GE1508KA/P；产品编号：30122038024；A端接入端口：P36169-YWHJ-棠溪村微网格业务汇聚机房1（990）-1-1-TPN1EM10F-10-ETH；Z端接入端口：24696-华泰证券万国数据-L-T-3-1-1-TPK1EX4S-4-ETH.2501-2502；故障发生时间：2026-10-24 02:18:05；故障现象：专线中断；OSS侧事件流水号：CMCC-GZ-TSCLX-20261024-004403',
+    first: 'tt.first.c1',
+    type: 'tt.type',
+    target: 'tt.target',
+    context: 'tt.ctx.c1',
   },
   c2: {
-    first: '发起专线投诉诊断：广州-汕头FE2100KA/P 专线质差',
-    type: '集客专线业务投诉诊断',
-    target: '基于用户的投诉上下文信息，对网络侧故障进行根因诊断，返回故障根因、修复建议等诊断结果信息。',
-    context: '电路编号：广州-汕头FE2100KA/P；产品编号：30122038024；A端接入端口：P1310-中石油（黄埔大道中路-风光路）-VIP-JK-3A-1-1-TN81EG8E-1-ETH.409；Z端接入端口：21722-汕头潮阳关埠加油站-1-4-TND1EF8T-1-ETH.3532；故障发生时间：2026-10-28 10:20:08；故障现象：专线质差；OSS侧事件流水号：CMCC-GZ-TSCLX-20261028-008503',
+    first: 'tt.first.c2',
+    type: 'tt.type',
+    target: 'tt.target',
+    context: 'tt.ctx.c2',
   },
 }
 
@@ -51,6 +53,8 @@ const CASE_TT = {
 // V6.14：卡底 padding 0（react-panels 口径）——h = 8 + 20 + 4 + 行数×20
 const VALUE_W = 246
 const estH = (text) => 32 + wrapLines(text, VALUE_W) * 20
+// V6.71（用户规格）：任务上下文按「；」分段每段一行（段内仍可折行）——估值按分段求和
+const estCtxH = (text) => 32 + text.split(/[；;]/).reduce((a, s) => a + wrapLines(s + '；', VALUE_W), 0) * 20
 
 export default function TaskTPanel(props) {
   const stage = useStageClock(props, 8)
@@ -61,7 +65,7 @@ export default function TaskTPanel(props) {
   // V6.18：rem 布局下 offset* 为已乘 k 的布局像素，而 railH 数字入 inline style 会被
   // remjsx ÷16 转 rem 再乘 16k（双乘 k）——测量值须 ÷k 还原设计 px（同 TBubble 高度修复）
   const [railH, setRailH] = useState(() => {
-    const h1 = estH(tt.type), h2 = estH(tt.target), h3 = estH(tt.context)
+    const h1 = estH(T(tt.type)), h2 = estH(T(tt.target)), h3 = estCtxH(T(tt.context))
     return { s: h1 / 2 - 4, d1: (h1 + h2) / 2, d2: (h2 + h3) / 2 }
   })
   const scrollRef = useRef(null)
@@ -105,7 +109,7 @@ export default function TaskTPanel(props) {
         </span>
         {/* V6.14（用户规格）：次级标题白字（原先继承暗灰看不清） */}
         <span className="tdlg-title" style={{ marginLeft: '0.6875rem', color: '#fff' }}>
-          详细交互流程
+          {T('lbl.interactDetails')}
         </span>
       </div>
 
@@ -113,14 +117,14 @@ export default function TaskTPanel(props) {
         {/* V6.14（用户规格）：气泡底 padding 1rem——距最底部文字 1rem */}
         <TBubble width={325} tail="left" style={{ padding: '0.75rem 0.8125rem 1rem 1.375rem' }}>
           {/* ① 首行任务描述（V4 按案） */}
-          <div className={'tt-intro ir-reveal' + on(1)}>{tt.first}</div>
+          <div className={'tt-intro ir-reveal' + on(1)}>{T(tt.first)}</div>
           {/* ② 匹配Prompt模板区（③模板选中高亮） */}
           <div className={'td-hline ir-reveal' + on(2)} style={{ width: '18.125rem', marginTop: '0.625rem' }} />
           <div className={'tt-text ir-reveal' + on(2)} style={{ marginTop: '0.375rem' }}>
-            1、基于意图，精准匹配Prompt模板。
+            {T('tt.step1')}
           </div>
           <div className={'tt-text tt-text--dim ir-reveal' + on(2)} style={{ marginTop: '0.5rem' }}>
-            Task模板
+            {T('tt.tmpl')}
           </div>
           <div className={'tt-radios ir-reveal' + on(2)} style={{ marginTop: '0.25rem' }}>
             {/* V6.19（用户规格）：模板选中动效——默认全部未选（plain），③ 段转选中
@@ -131,15 +135,15 @@ export default function TaskTPanel(props) {
               className={'tt-opt ' + (stage >= 3 ? 'radio-option--glass' : 'radio-option--plain')}
               style={{ color: stage >= 3 ? '#fff' : undefined }}
             >
-              专线投诉场景
+              {T('tt.optA')}
             </span>
-            <span className="tt-opt radio-option--plain">故障处理场景</span>
+            <span className="tt-opt radio-option--plain">{T('tt.optB')}</span>
             <span className="tt-opt tt-opt--more radio-option--plain">…</span>
           </div>
           {/* ④ 自然语言 → 确定性任务 */}
           <div className={'td-hline ir-reveal' + on(4)} style={{ width: '18.125rem', marginTop: '0.625rem' }} />
           <div className={'tt-text ir-reveal' + on(4)} style={{ marginTop: '0.375rem' }}>
-            2、自然语言 → 确定性任务
+            {T('tt.step2')}
           </div>
 
           {/* 时间轴：空心圆点 + 虚线（圆点与各卡片垂直居中，随对应卡片渐入；
@@ -156,29 +160,36 @@ export default function TaskTPanel(props) {
             {/* ⑤⑥⑦ 任务卡片：任务类型 / 任务目标 / 任务上下文（高度随文字折行自适应） */}
             <div className="tt-cards">
               <div className={'td-card ir-reveal' + on(5)}>
-                <div className="td-card__label">任务类型</div>
-                <div className="td-card__value">{tt.type}</div>
+                <div className="td-card__label">{T('tt.lblType')}</div>
+                <div className="td-card__value">{T(tt.type)}</div>
               </div>
               <div className={'td-card ir-reveal' + on(6)}>
-                <div className="td-card__label">任务目标</div>
-                <div className="td-card__value">{tt.target}</div>
+                <div className="td-card__label">{T('tt.lblTarget')}</div>
+                <div className="td-card__value">{T(tt.target)}</div>
               </div>
               <div className={'td-card ir-reveal' + on(7)}>
-                <div className="td-card__label">任务上下文</div>
-                <div className="td-card__value">{tt.context}</div>
+                <div className="td-card__label">{T('tt.lblCtx')}</div>
+                {/* V6.71（用户规格）：上下文按「；」分段——每段独立一行（段内超宽仍折行） */}
+                <div className="td-card__value">
+                  {T(tt.context).split(/[；;]/).map((seg, i, arr) => (
+                    <div key={i}>{seg + (i < arr.length - 1 ? (T(tt.context).includes('；') ? '；' : ';') : '')}</div>
+                  ))}
+                </div>
               </div>
             </div>
           </div>
         </TBubble>
 
         {/* ⑧ 回复消息（右侧尾对齐） */}
+        {/* V6.82（用户规格）：气泡宽按译后文字量取 max——EN 回复句超 163 定宽 31px
+            （zh 文字 ~120px 恒 163 逐像素不变；+26 = 左 padding 18 + 右余量 8） */}
         <TBubble
-          width={163}
+          width={Math.max(163, measureText(T('tt.reply'), '400 12px ' + FONT) + 26)}
           tail="right"
           className={'ir-reveal' + on(8)}
           style={{ margin: '1rem 0 0 auto', padding: '0.75rem 0 1rem 1.125rem' }}
         >
-          <div className="tt-text">任务明确，马上执行！</div>
+          <div className="tt-text">{T('tt.reply')}</div>
         </TBubble>
       </div>
     </div>

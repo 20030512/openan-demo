@@ -24,6 +24,7 @@
 import React from 'react';
 import { CHEVRONS, satCssStyle } from '../roles';
 import { CASES } from '../cases';
+import { T } from '../../i18n';
 import './flow.css';
 
 // 图标（设计烤入七枚，V5.45/V5.68 全白剪影——CSS filter 见 .fl-chip img）
@@ -43,7 +44,7 @@ export default function StepBar({ world, pub }) {
   const live = !!world;
   const steps = live ? world.steps : CASES[pub.caseId].steps.map(() => 'done');
   const names = CASES[pub.caseId].steps;
-  const bmin = CASES[pub.caseId].bmin;
+  const bdur = CASES[pub.caseId].bdur;
   // 隐藏段（todo 不渲染）与右缘改平：首个隐藏步骤的前一枚改平（c1 中段空缺 / c2 末段截断）
   let firstHidden = -1;
   let lastVis = -1;
@@ -65,10 +66,10 @@ export default function StepBar({ world, pub }) {
         className={'fl-chip' + (s === 'active' ? ' fl-chip--active' : '') + (s === 'todo' ? ' fl-chip--todo' : '')}
         style={{ clipPath: clip, ...satCssStyle(pub, ch.box, c) }}
         onClick={() => pub.api.replayStep(i)}
-        title={names[i]}>
+        title={T(names[i])}>
         <img src={'/icons/' + ICONS[i] + '.svg'} alt="" draggable={false} />
-        <span className="fl-chip__name">{names[i]}</span>
-        <span className="fl-chip__dur">{bmin[i]}分钟</span>
+        <span className="fl-chip__name">{T(names[i])}</span>
+        <span className="fl-chip__dur">{T(bdur[i])}</span>
       </div>
     );
   });

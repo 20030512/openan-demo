@@ -22,6 +22,7 @@
 // 搜索+状态复合过滤后无可见工单时，列表区呈现「暂无匹配工单」空态提示
 import React from 'react';
 import { ORDER_STATUS_OPTIONS, orderVisible } from '../roles';
+import { T } from '../../i18n';
 
 export default function OrderFilter({ pub }) {
   const [open, setOpen] = React.useState(false);
@@ -32,7 +33,7 @@ export default function OrderFilter({ pub }) {
       <div
         className="st-layer st-ofilter"
         style={{ left: 202, top: 73, width: 82, height: 24 }}
-        title="按状态筛选工单"
+        title={T('filter.byStatus')}
         onClick={() => setOpen((o) => !o)}
       />
       {open ? (
@@ -45,7 +46,7 @@ export default function OrderFilter({ pub }) {
                 className={'st-speeditem' + (s === cur ? ' st-speeditem-cur' : '')}
                 onClick={() => { setOpen(false); if (s !== cur) pub.api.setStatus(s); }}
               >
-                {s}
+                {T(s)}
               </div>
             ))}
           </div>
@@ -53,7 +54,7 @@ export default function OrderFilter({ pub }) {
       ) : null}
       {noneVisible ? (
         <div className="st-layer st-oempty" style={{ left: 24, top: 218, width: 256, height: 22 }}>
-          暂无匹配工单
+          {T('filter.empty')}
         </div>
       ) : null}
     </>

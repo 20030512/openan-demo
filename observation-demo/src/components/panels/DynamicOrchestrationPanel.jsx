@@ -17,6 +17,7 @@
 import React from 'react'
 import useStageClock from './useStageClock.js'
 import { ORCH_WEIGHTS } from '../../storyline/panel-timing.js'
+import { T, getLang } from '../../i18n'
 
 /* DynamicOrchestrationPanel — 动态编排详情面板
    （V6.0 流式布局：正文横向流式三栏——左侧元素 | 编排引擎 | 右侧元素，图示各栏纵向流式）
@@ -27,11 +28,14 @@ import { ORCH_WEIGHTS } from '../../storyline/panel-timing.js'
 export default function DynamicOrchestrationPanel(props) {
   const stage = useStageClock(props, 3, ORCH_WEIGHTS)
   const on = (k) => (stage >= k ? ' ir-on' : '')
+  // V6.84（用户规格）：EN「Diagnosis」（~46px）右缘越入 节点2/节点3 按钮（x83 起）——
+  // 标签左移按连线段 [35.5,83] 居中（zh 诊断 20px 原位即居中，不动）
+  const diagL = getLang() === 'en' ? 36 : 49
   return (
     <div className="glass-panel fp-col" style={{ width: 574, height: 201 }}>
       <div className="fp-head">
         <div className="p-title-bar" />
-        <div className="p-title-text">动态编排</div>
+        <div className="p-title-text">{T('oc.title')}</div>
         {/* V5.53（用户规格）：副标题「动态生成编排流程」删除 */}
       </div>
 
@@ -46,8 +50,8 @@ export default function DynamicOrchestrationPanel(props) {
           <div style={{ position: 'relative', width: 256, height: 44 }}>
             <div className="p-card" style={{ left: 5, top: 0, width: 256, height: 44 }} />
             <img className="p-abs" src="/assets/intent-title-bg.svg" alt="" style={{ left: 0, top: 5, width: 62, height: 43.04 }} />
-            <div className="p-tag-text" style={{ left: 17, top: 13 }}>意图</div>
-            <div className="p-body-text" style={{ left: 65, top: 12 }}>跨地市的SPN投诉任务诊断</div>
+            <div className="p-tag-text" style={{ left: 17, top: 13 }}>{T('oc.intent')}</div>
+            <div className="p-body-text" style={{ left: 65, top: 12 }}>{T('oc.intentBody')}</div>
           </div>
           <img className="p-abs" src="/assets/plus.svg" alt="" style={{ position: 'static', display: 'block', width: 12, height: 12.01, marginLeft: 108, marginTop: '-0.75rem' }} />
           <div style={{ position: 'relative', width: 256, height: 80, marginTop: '-0.75rem' }}>
@@ -55,11 +59,12 @@ export default function DynamicOrchestrationPanel(props) {
             <img className="p-abs" src="/assets/agentcard-title-bg.svg" alt="" style={{ left: 0, top: 5, width: 98, height: 43.04 }} />
             <div className="p-tag-text" style={{ left: 17, top: 13 }}>AgentCard</div>
             <div className="radio-group" style={{ left: 101, top: 6, width: 143, height: 68 }}>
-              <div className="radio-option radio-option--glass" style={{ left: 8, top: 4, width: 127, height: 28, justifyContent: 'center' }}>
-                粤东SPN网络智能
+              {/* orch-opt：EN 长名换行钩子（i18n.css html.lang-en .orch-opt，V6.82） */}
+              <div className="radio-option radio-option--glass orch-opt" style={{ left: 8, top: 4, width: 127, height: 28, justifyContent: 'center' }}>
+                {T('agent.yd')}
               </div>
-              <div className="radio-option radio-option--glass" style={{ left: 8, top: 36, width: 127, height: 28, justifyContent: 'center' }}>
-                粤西SPN网络智能
+              <div className="radio-option radio-option--glass orch-opt" style={{ left: 8, top: 36, width: 127, height: 28, justifyContent: 'center' }}>
+                {T('agent.yx')}
               </div>
             </div>
           </div>
@@ -75,7 +80,7 @@ export default function DynamicOrchestrationPanel(props) {
               className="p-engine-name"
               style={{ left: 0, top: 0, width: '100%', height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center' }}
             >
-              编排引擎
+              {T('oc.engine')}
             </div>
           </div>
         </div>
@@ -84,7 +89,7 @@ export default function DynamicOrchestrationPanel(props) {
         <div className={'ir-reveal' + on(3)} style={{ position: 'relative', width: 218, height: 136 }}>
           <div className="p-card" style={{ left: 0, top: 0, width: 218, height: 136 }} />
           <img className="p-abs" src="/assets/workflow-title-bg.svg" alt="" style={{ left: -5, top: 5, width: 135, height: 43.04 }} />
-          <div className="p-tag-text" style={{ left: 12, top: 13 }}>智能体协作工作流</div>
+          <div className="p-tag-text" style={{ left: 12, top: 13 }}>{T('oc.workflow')}</div>
 
           <svg className="p-abs" style={{ left: 0, top: 0 }} width="218" height="136" viewBox="0 0 218 136" fill="none">
             <path d="M35.5 73 L35.5 64 Q35.5 58 41.5 58 L83 58" stroke="#09AA71" strokeWidth="1" strokeLinecap="round" />
@@ -97,14 +102,15 @@ export default function DynamicOrchestrationPanel(props) {
             <path d="M174 101.5 L178.5 97 L183 101.5" stroke="#09AA71" strokeWidth="1" strokeLinecap="round" strokeLinejoin="round" />
           </svg>
 
-          <div className="p-node-btn" style={{ left: 83, top: 46 }}>节点2</div>
-          <div className="p-node-btn" style={{ left: 12, top: 73 }}>节点1</div>
-          <div className="p-node-btn" style={{ left: 155, top: 73 }}>节点1</div>
-          <div className="p-node-btn" style={{ left: 83, top: 100 }}>节点3</div>
+          <div className="p-node-btn" style={{ left: 83, top: 46 }}>{T('oc.node2')}</div>
+          <div className="p-node-btn" style={{ left: 12, top: 73 }}>{T('oc.node1')}</div>
+          <div className="p-node-btn" style={{ left: 155, top: 73 }}>{T('oc.node1')}</div>
+          <div className="p-node-btn" style={{ left: 83, top: 100 }}>{T('oc.node3')}</div>
 
-          <div className="p-mini-label" style={{ left: 49, top: 46, color: '#09AA71' }}>诊断</div>
-          <div className="p-mini-label" style={{ left: 158, top: 46, color: '#5CA2E9' }}>结果汇总</div>
-          <div className="p-mini-label" style={{ left: 50, top: 100, color: '#09AA71' }}>诊断</div>
+          {/* V6.84：diagL 见组件顶（EN Diagnosis 左移让位节点按钮） */}
+          <div className="p-mini-label" style={{ left: diagL, top: 46, color: '#09AA71' }}>{T('oc.diag')}</div>
+          <div className="p-mini-label" style={{ left: 158, top: 46, color: '#5CA2E9' }}>{T('oc.summary')}</div>
+          <div className="p-mini-label" style={{ left: diagL + 1, top: 100, color: '#09AA71' }}>{T('oc.diag')}</div>
         </div>
       </div>
     </div>

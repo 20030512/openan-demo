@@ -1,0 +1,137 @@
+/* i18n.css — 语言样式分离
+   默认 = 中文（无类，基线即现有全部样式）；
+   英文在 <html> 挂 lang-en 类（i18n.jsx setLang 切换），以下为英文专属覆盖：
+   英文普遍长于中文，定宽/nowrap 元素按实测收窄字号或放开宽度。
+   设计层节点带 inline 样式（remjsx 已 px→rem），故 data-id 规则用 !important 覆盖。 */
+html.lang-en .fl-mini__title {
+  /* 迷你子步骤：3.5rem 定宽装不下英文短译名——放开宽度并收窄字号（点距 62px 内安全） */
+  width: auto;
+  font-size: 0.75rem;
+}
+/* 流程中心（fl-lc__name）不在此覆盖——V6.80 已改为 geometry.lcBox() 卡宽随译名自适应 */
+html.lang-en .fl-chip__name {
+  /* 步骤条 chip 221px 定宽：步骤英文名收一档，避免与图标/时长挤压 */
+  font-size: 1rem;
+}
+html.lang-en .fl-order__cust {
+  /* 工单卡客户名：英文公司名更长，收窄一档以显示更多（超出仍 ellipsis + title 悬停） */
+  font-size: 0.875rem;
+}
+html.lang-en .wo-label {
+  /* 工单详情弹窗 label 列 3.5rem(56px)：EN 长标签（Complaint Time ~105px）溢出压值列——
+     英文加宽至 7rem(112px)；右对齐贴值列（值列起点 128px，弹窗 36rem 内值列 ~384px） */
+  width: 7rem;
+}
+html.lang-en .notif-label {
+  /* Notification-T 对比卡 label 列 3.25rem(52px)：EN Packet Loss ~65px 超列宽贴数值
+     （0 间距）且两行数值起点错位——英文加宽至 5.0625rem(81px)：Packet Loss 距数值
+     ~16px（同中文丢包率→数值节奏），Latency/Packet Loss 数值列对齐；卡内宽 120px
+     可容（81+0.01% ≈ 108px） */
+  min-width: 5.0625rem;
+}
+html.lang-en .search-panel__option {
+  /* 检索面板选项 9.25rem 定宽 nowrap：智能体英文名收窄 */
+  font-size: 0.65rem;
+}
+html.lang-en .search-panel__subtitle {
+  /* 检索面板副题 nowrap：英句收窄 + 折两行（面板高 12.125→12.75rem，见 SearchAgentPanel） */
+  font-size: 0.6875rem;
+  white-space: normal;
+}
+html.lang-en .tt-opt {
+  /* Task-T 模板单选项半宽 nowrap：英文名收窄 */
+  font-size: 0.6875rem;
+}
+html.lang-en .st-lroute {
+  /* 日志路由列：英文智能体名更长——限宽截断，保证摘要列可见 */
+  max-width: 24rem;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* —— 设计层文本节点（data-id 精确定位；zh 基线不受影响；!important 压过设计 inline 样式）—— */
+html.lang-en [data-id='23:135686'] {
+  /* 流程区「投诉分析流」标签 70px 定宽：Complaint Analysis Flow 同中文 14px——
+     放开宽度自适应文字（画布 320..493，右邻虚线 515 起，不重叠） */
+  width: auto !important;
+  white-space: nowrap !important;
+}
+/* —— 工具栏按钮标签（回放/暂停/单步/停止）V6.81（用户规格）：EN 与中文同字号 0.875rem——
+      原 0.4375rem 收窄版式废止（"文字太小"）。超宽处理先居中：Step/Stop 宽 ~30px 恰容于
+      原版式（图标 14..26、文字 30..），保持原位；仅 Replay/Pause（45/39px）放不下——播放键
+      图标随文字组整体左移（14→6）让位，标签于 [22,72] 区间容纳（Replay 22..67、Pause 22..61），
+      按钮长度无需加宽；暂停覆盖层同步左移见 Toolbar.jsx st-pauseicon —— */
+html.lang-en [data-id='23:137022'] {
+  /* 播放键图标：随文字组整体左移居中（14px → 6px） */
+  left: 0.375rem !important;
+}
+html.lang-en [data-id='23:137028'] {
+  /* 播放/暂停标签：14px 同中文，左移居中（width auto 随文字宽） */
+  font-size: 0.875rem !important;
+  left: 1.375rem !important;
+  width: auto !important;
+}
+html.lang-en [data-id='23:137057'],
+html.lang-en [data-id='23:137084'] {
+  /* 单步/停止标签：14px 同中文——Step/Stop ~30px 原版式即容，保持原位 */
+  font-size: 0.875rem !important;
+  width: auto !important;
+}
+html.lang-en [data-id='23:137645'] {
+  /* 主标题 396px 定宽：英文全题 ~809px 同中文 20px——放开宽度并左移居中：
+     文字中心对齐中文题位 ~1115.5（923.5−212.3 → 711.2..1519.8），与下方梯形下边沿同轴 */
+  width: auto !important;
+  white-space: nowrap !important;
+  margin-left: -13.270625rem !important;
+}
+html.lang-en [data-id='deco:title-trapezoid'] {
+  /* 梯形下边沿（用户规格·二轮收紧）：英文全题 ~809px——下边沿 860→825 贴合文字
+     （两侧各余 ~8px，同中文版式紧致口径；两翼/斜边/圆角同中文版）；
+     下边沿画布 703..1528（中心 1115.5 与文字同轴）——文字 711.2..1519.8 不超出梯形区域。
+     节点 654→411、宽 924→1359（margin 补偿，随左栏收起 titleShift 平移不破坏） */
+  width: 84.9375rem !important;
+  margin-left: -15.1875rem !important;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 1359 48'%3E%3Cdefs%3E%3ClinearGradient id='tg' x1='0' x2='1359' y1='0' y2='0' gradientUnits='userSpaceOnUse'%3E%3Cstop offset='0' stop-color='%238ABEF3' stop-opacity='0.02'/%3E%3Cstop offset='0.18' stop-color='%238ABEF3' stop-opacity='0.2'/%3E%3Cstop offset='0.5' stop-color='%238ABEF3' stop-opacity='0.85'/%3E%3Cstop offset='0.82' stop-color='%238ABEF3' stop-opacity='0.2'/%3E%3Cstop offset='1' stop-color='%238ABEF3' stop-opacity='0.02'/%3E%3C/linearGradient%3E%3C/defs%3E%3Cpath d='M0,2 H200 Q214,2 226.2,8.86 L265.8,31.14 Q278,38 292,38 H1117 Q1131,38 1142.2,29.6 L1167.8,10.4 Q1179,2 1193,2 H1359' fill='none' stroke='url(%23tg)' stroke-width='1.5' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E") !important;
+}
+html.lang-en [data-id='deco:title-band'] {
+  /* 底部光晕带随下边沿同步收紧（860→825，左缘对齐下边沿 703） */
+  width: 51.5625rem !important;
+  margin-left: -14.20125rem !important;
+}
+html.lang-en [data-id='23:137102'] {
+  /* 左栏「工单列表」标题 72px 定宽：Complaint Tickets ~162px——放开宽度
+     （x24 起 ~186px，不与右侧筛选区 206px 重叠） */
+  width: auto !important;
+  white-space: nowrap !important;
+}
+html.lang-en [data-id='I23:137104;3:27462;2:295964'] {
+  /* 状态筛选标签 56px 定宽：All Status 收窄 */
+  font-size: 0.65rem !important;
+}
+html.lang-en [data-id='23:137670'] {
+  /* 顶部导航「协作观测」页签 80px 定宽：Collaboration Observability 同中文 20px——
+     放开宽度自适应文字（渐变文字越界不绘制，盒宽须含全文字；x72 起 ~345px，
+     顶栏中部无元素，安全） */
+  width: auto !important;
+  white-space: nowrap !important;
+}
+
+/* —— V6.82（用户规格）：EN 文字溢出修复（全页实测扫描定位，zh 基线零影响）—— */
+html.lang-en .wo-label {
+  /* 工单详情弹窗标签列 3.5rem 定宽：EN 长标签（最长 Complaint Time ~106px）溢出
+     并与值列重叠 ~34px——按最长标签加宽（值列整体右移，各行标签保持对齐） */
+  width: 6.75rem;
+}
+html.lang-en .nt-msg {
+  /* Notification-T 底部消息 nowrap：EN 长句超面板内容宽 80px——折两行
+     （面板高 13→14rem 随调，见 NotificationTPanel / SubStepPanels） */
+  white-space: normal;
+}
+html.lang-en .orch-opt {
+  /* 动态编排智能体选项 127px 定宽 nowrap：EN 长名溢出两侧各 ~15px——折两行居中
+     （2×13px=26 ≤ 28 高；不放宽——radio-group 143 / AgentCard 256 装不下更宽选项） */
+  white-space: normal;
+  text-align: center;
+  line-height: 0.8125rem;
+}

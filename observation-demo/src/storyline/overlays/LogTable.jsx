@@ -19,18 +19,22 @@
 // 数据来自 case-data.js（case1/case2 参考数据）；斑马纹对齐设计稿表格（偶数行 rgba(119,119,119,0.15)）
 import React, { useEffect, useRef, useState } from 'react';
 import { LOGS, logStretchX, viewFactors } from '../roles';
+import { T } from '../../i18n';
 
+// 徽章配色按占位键（buildLogs 产出 badge.* 键）
 const BADGE = {
-  'Task-T请求': { background: 'rgba(102,140,247,0.15)', color: 'rgba(140,163,250,1)' },
-  'Task-T响应': { background: 'rgba(54,193,141,0.15)', color: 'rgba(54,193,141,1)' },
-  'Negotiation-T请求': { background: 'rgba(209,159,0,0.15)', color: 'rgba(209,159,0,1)' },
-  'Negotiation-T响应': { background: 'rgba(209,159,0,0.15)', color: 'rgba(209,159,0,1)' },
+  'badge.taskReq': { background: 'rgba(102,140,247,0.15)', color: 'rgba(140,163,250,1)' },
+  'badge.taskResp': { background: 'rgba(54,193,141,0.15)', color: 'rgba(54,193,141,1)' },
+  'badge.negReq': { background: 'rgba(209,159,0,0.15)', color: 'rgba(209,159,0,1)' },
+  'badge.negResp': { background: 'rgba(209,159,0,0.15)', color: 'rgba(209,159,0,1)' },
+  'badge.authReq': { background: 'rgba(168,159,249,0.15)', color: 'rgba(168,159,249,1)' },
+  'badge.authResp': { background: 'rgba(168,159,249,0.15)', color: 'rgba(168,159,249,1)' },
   // Notification-T 通知（抢通结果/工单报结）：配色对齐设计稿 Notification-T 连线胶囊（青）
-  'Notification-T通知': { background: 'rgba(44,184,201,0.15)', color: 'rgba(85,204,217,1)' },
+  'badge.notif': { background: 'rgba(44,184,201,0.15)', color: 'rgba(85,204,217,1)' },
   // 节点内部步骤（自环）：银灰徽章，路由仅显示节点名称，名称后附内部子流程标签
-  '内部': { background: 'rgba(201,201,201,0.15)', color: 'rgba(201,201,201,1)' },
+  'badge.internal': { background: 'rgba(201,201,201,0.15)', color: 'rgba(201,201,201,1)' },
   // 注册中心检索命中：配色对齐连线检索胶囊（紫）
-  '检索': { background: 'rgba(168,159,249,0.15)', color: 'rgba(168,159,249,1)' },
+  'badge.search': { background: 'rgba(168,159,249,0.15)', color: 'rgba(168,159,249,1)' },
 };
 
 export default function LogTable({ logs, anchor, pub }) {
@@ -80,16 +84,16 @@ export default function LogTable({ logs, anchor, pub }) {
                     strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round" />
                 </svg>
               </span>
-              <span className="st-lbadge" style={BADGE[l.badge] || BADGE['Task-T请求']}>{l.badge}</span>
+              <span className="st-lbadge" style={BADGE[l.badge] || BADGE['badge.taskReq']}>{T(l.badge)}</span>
               <span className="st-ltime">{l.clock}</span>
               <span className="st-lroute">
                 {internal
-                  ? <>{l.from}{l.step ? <em className="st-ltag">{l.step}</em> : null}</>
-                  : <>{l.from}<i> → </i>{l.to}</>}
+                  ? <>{T(l.from)}{l.step ? <em className="st-ltag">{T(l.step)}</em> : null}</>
+                  : <>{T(l.from)}<i> → </i>{T(l.to)}</>}
               </span>
-              <span className="st-lsum">{l.summary}</span>
+              <span className="st-lsum">{T(l.summary)}</span>
             </div>
-            {open === i ? <div className="st-lprompt">{l.prompt}</div> : null}
+            {open === i ? <div className="st-lprompt">{T(l.prompt)}</div> : null}
           </div>
         );
       })}
