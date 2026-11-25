@@ -1,0 +1,96 @@
+/* Copyright (c) 2026 Huawei Technologies Co., Ltd. */
+/* All Rights Reserved. */
+/* */
+/* SPDX-License-Identifier: Apache-2.0 */
+
+@import "tailwindcss";
+
+@custom-variant dark (&:is(.dark *));
+
+/* shadcn tokens, tuned to the dark-blue "smart city" look from the design doc. */
+:root {
+  --background: oklch(0.16 0.04 255);
+  --foreground: oklch(0.96 0.01 240);
+  --card: oklch(0.2 0.045 255);
+  --card-foreground: oklch(0.96 0.01 240);
+  --popover: oklch(0.2 0.045 255);
+  --popover-foreground: oklch(0.96 0.01 240);
+  --primary: #e8ff1f;
+  --primary-foreground: #0b0b0c;
+  --secondary: oklch(0.27 0.05 255);
+  --secondary-foreground: oklch(0.96 0.01 240);
+  --muted: oklch(0.25 0.04 255);
+  --muted-foreground: oklch(0.72 0.03 245);
+  --accent: oklch(0.3 0.06 255);
+  --accent-foreground: oklch(0.96 0.01 240);
+  --destructive: oklch(0.7 0.19 25);
+  --border: oklch(1 0 0 / 12%);
+  --input: oklch(1 0 0 / 16%);
+  --ring: #e8ff1f;
+  --radius: 0.875rem;
+  --low: #5fb2e6;
+  --peak: #ffb37a;
+  --flat: #8fa0a8;
+}
+.dark { color-scheme: dark; }
+
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-card: var(--card);
+  --color-card-foreground: var(--card-foreground);
+  --color-popover: var(--popover);
+  --color-popover-foreground: var(--popover-foreground);
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-secondary: var(--secondary);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-accent: var(--accent);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-destructive: var(--destructive);
+  --color-border: var(--border);
+  --color-input: var(--input);
+  --color-ring: var(--ring);
+  --color-low: var(--low);
+  --color-peak: var(--peak);
+  --color-flat: var(--flat);
+  --radius-lg: var(--radius);
+  --radius-md: calc(var(--radius) - 2px);
+  --radius-sm: calc(var(--radius) - 4px);
+  --font-sans: Geist, ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif;
+  --font-mono: "Geist Mono", ui-monospace, SFMono-Regular, Consolas, monospace;
+}
+
+@layer base {
+  * { @apply border-border; }
+  html, body, #root { min-height: 100dvh; }
+  body {
+    @apply bg-background text-foreground font-sans antialiased;
+    padding: env(safe-area-inset-top) env(safe-area-inset-right) env(safe-area-inset-bottom) env(safe-area-inset-left);
+  }
+  :focus-visible { outline: 2px solid var(--ring); outline-offset: 2px; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after { animation-duration: 0.01ms !important; transition-duration: 0.01ms !important; }
+}
+
+/* Slow pulse for the "active site" lights on the city map. */
+@keyframes site-glow { 0%, 100% { opacity: 0.35; } 50% { opacity: 1; } }
+.site-glow { animation: site-glow 3.2s ease-in-out infinite; }
+
+/* Chinese text: the small sizes of the frames are one and a half pixels larger, since the characters look smaller than Latin ones. */
+html[lang="zh-CN"] .text-xs { font-size: 0.8125rem; line-height: 1.25rem; }
+html[lang="zh-CN"] .text-sm { font-size: 0.9375rem; }
+html[lang="zh-CN"] .text-\[9px\] { font-size: 10.5px; }
+html[lang="zh-CN"] .text-\[9\.5px\] { font-size: 11px; }
+html[lang="zh-CN"] .text-\[10px\] { font-size: 11.5px; }
+html[lang="zh-CN"] .text-\[10\.5px\] { font-size: 12px; }
+html[lang="zh-CN"] .text-\[11px\] { font-size: 12.5px; }
+html[lang="zh-CN"] .text-\[11\.5px\] { font-size: 13px; }
+html[lang="zh-CN"] .text-\[12px\] { font-size: 13.5px; }
+html[lang="zh-CN"] .text-\[12\.5px\] { font-size: 14px; }
+html[lang="zh-CN"] .text-\[13px\] { font-size: 14.5px; }
+html[lang="zh-CN"] .text-\[13\.5px\] { font-size: 15px; }

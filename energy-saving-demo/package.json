@@ -1,0 +1,16 @@
+{
+  "name": "energy-saving-uc",
+  "license": "Apache-2.0",
+  "private": true,
+  "description": "Energy-Saving UC: Energy-Saving Agent (/dashboard) and Save Strategy (/strategy), one Node server, one SQLite file",
+  "scripts": {
+    "install:all": "npm install --prefix server && npm install --prefix web && npm install --prefix strategy-web",
+    "build": "npm run build --prefix web && npm run build --prefix strategy-web && npm run build --prefix server",
+    "start": "npm start --prefix server",
+    "dev:server": "npm run dev --prefix server",
+    "dev:web": "npm run dev --prefix web",
+    "dev:strategy": "npm run dev --prefix strategy-web",
+    "check": "npm run typecheck --prefix server && npm test --prefix server && npm test --prefix web && npm test --prefix strategy-web && npm run build",
+    "release": "node scripts/release.mjs"
+  }
+}

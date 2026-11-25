@@ -1,0 +1,21 @@
+{
+  "_comment": "Settings of the AI steps that read the user's sentence. The API key is never kept here: it comes from the Manage page or from the LLM_API_KEY environment variable. Provider, model and base URL are chosen on the Manage page (or LLM_PROVIDER, LLM_MODEL, LLM_BASE_URL). `prompt` routes the sentence to the features; `paramsPrompt` reads the parameters of a task (region, rate by time range, reserve) and must hold {userInput}.",
+  "timeoutMs": 300000,
+  "retries": 1,
+  "limits": {
+    "rateMbps": {
+      "min": 0.1,
+      "max": 100000
+    },
+    "reserveBackupRatio": {
+      "min": 0,
+      "max": 100
+    }
+  },
+  "defaults": {
+    "rateMbps": 50,
+    "reserveBackupRatio": 50
+  },
+  "prompt": "You route messages for an energy-saving assistant. Today is {today}.\nOne message may ask for several things. List every action in the order to run it, using these names: \"submit-task\" (create an energy-saving task), \"query-price\" (dynamic electricity price), \"query-plan\" (Li-ion battery charge/discharge slot plan), \"query-both\" (price and plan together), or \"unknown\".\nA request to see the data or information of a day, without the word price or plan, asks for both: \"query-both\". A task sentence that only mentions prices (for example \"... based on dynamic electricity prices\") is just a task, not a price query.\nReturn only JSON: {\"intents\":[\"...\"],\"date\":\"YYYY-MM-DD\"}.\n\"date\" is the day asked about for the queries. Work it out yourself from today's date, whatever the wording (yesterday, the previous day, the day before, three days ago, last Friday, 昨天, 前一天, 10月24日, 2026-10-24); without a day in the message it is today. The parameters of a task are read in a separate step.\nExamples:\ninput \"查询昨天的电价\" -> {\"intents\":[\"query-price\"],\"date\":\"<yesterday>\"}\ninput \"I want to see one previous day data\" -> {\"intents\":[\"query-both\"],\"date\":\"<yesterday>\"}\ninput \"show me the price 3 days ago\" -> {\"intents\":[\"query-price\"],\"date\":\"<3 days before today>\"}\ninput \"create a task in region A, then show today's price and plan\" -> {\"intents\":[\"submit-task\",\"query-both\"],\"date\":\"<today>\"}",
+  "paramsPrompt": "Read the energy-saving task in the operator's message below and return its parameters as one JSON object, with nothing before or after it.\n\nThe object has three fields:\n- \"region\": the name of the region, exactly as the message writes it (text); \"\" when the message names no region (never guess one).\n- \"rateMbps\": the downlink rate the network must keep, as a list of time ranges in the order of the day: [{\"timeRange\": \"HH:MM~HH:MM\", \"target\": \"<number>Mbps\"}]. The ranges do not overlap and stay between 00:00 and 24:00. When the message gives one rate for some hours and another rate for the rest of the day, write one entry for each part of the day.\n- \"reserveBackupRatio\": the share of backup power to keep, in percent (a number from 0 to 100).\n\nExample\nMessage: 为区域 示例区 创建节能任务：0点到5点保障 10Mbps，其余时间下行速率不低于 80MBPS，备电比例保持在 40% 以上\nAnswer: {\"region\":\"示例区\",\"rateMbps\":[{\"timeRange\":\"00:00~05:00\",\"target\":\"10Mbps\"},{\"timeRange\":\"05:00~24:00\",\"target\":\"80Mbps\"}],\"reserveBackupRatio\":40}\n\nMessage: {userInput}\nAnswer:"
+}
