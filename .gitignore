@@ -1,1 +1,22 @@
 observation-demo-local/
+
+# IDE
+.idea/
+
+# Local workflow docs (not for commit)
+test-coverage-workflow.md
+TEST_DESIGN.md
+
+# Virtual environments (guard against accidental staging / file explosion)
+.venv/
+venv/
+env/
+ENV/
+
+# Python test/coverage artifacts
+.coverage
+coverage.xml
+htmlcov/
+.pytest_cache/
+__pycache__/
+*.pyc
