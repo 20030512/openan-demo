@@ -1,0 +1,11 @@
+node_modules/
+server/dist/
+server/public/
+*.db
+*.db-shm
+*.db-wal
+release/
+data/
+logs/
+run/
+config/app.env
